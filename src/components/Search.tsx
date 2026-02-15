@@ -48,12 +48,13 @@ export function Search() {
       setIsLoading(true);
       try {
         // Pagefind is loaded dynamically from the built index
-        const pagefind = await (window as unknown as { pagefind: { search: (q: string) => Promise<{ results: { data: () => Promise<{ url: string; meta: { title: string }; excerpt: string }> }[] }> } }).pagefind);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pagefind = await (window as any).pagefind;
         const searchResult = await pagefind.search(query);
         const searchResults = await Promise.all(
-          searchResult.results.slice(0, 8).map(r => r.data())
+          searchResult.results.slice(0, 8).map((r: { data: () => Promise<{ url: string; meta: { title: string }; excerpt: string }> }) => r.data())
         );
-        setResults(searchResults.map(r => ({
+        setResults(searchResults.map((r: { url: string; meta: { title: string }; excerpt: string }) => ({
           url: r.url,
           title: r.meta.title,
           excerpt: r.excerpt,
