@@ -1,0 +1,34 @@
+---
+title: Architecture Overview
+description: Understanding Wesichain's modular design
+order: 1
+group: Guides
+---
+
+# Architecture Overview
+
+Wesichain is built as a modular crate family, letting you install only what you need.
+
+## Core Design Principles
+
+1. **Composable**: Chain components together like LEGO blocks
+2. **Type-Safe**: Leverage Rust's type system for compile-time correctness
+3. **Async-First**: Built on Tokio for high-performance concurrency
+4. **Streaming-Native**: First-class support for streaming responses
+
+## The 15 Crates
+
+### Core Layer
+
+| Crate | Purpose | When to Use |
+|-------|---------|-------------|
+| `wesichain-core` | Traits and primitives | Every project |
+| `wesichain-macros` | Procedural macros | For derive macros |
+| `wesichain-compat` | Migration helpers | Porting from Python |
+
+### LLM Layer
+
+| Crate | Purpose | When to Use |
+|-------|---------|-------------|
+| `wesichain-llm` | LLM abstractions | Any LLM usage |
+| `wesichain-prompt` | Prompt templates | Structured prompting |

@@ -1,0 +1,59 @@
+---
+const currentYear = new Date().getFullYear();
+
+const footerLinks = {
+  Product: [
+    { label: 'Documentation', href: '/docs' },
+    { label: 'Benchmarks', href: '/benchmarks' },
+    { label: 'Examples', href: '/docs/examples' },
+  ],
+  Resources: [
+    { label: 'GitHub', href: 'https://github.com/wesichain/wesichain', external: true },
+    { label: 'Crates.io', href: 'https://crates.io/search?q=wesichain-', external: true },
+    { label: 'docs.rs', href: 'https://docs.rs/wesichain-core', external: true },
+  ],
+  Legal: [
+    { label: 'MIT License', href: 'https://github.com/wesichain/wesichain/blob/main/LICENSE-MIT', external: true },
+    { label: 'Apache 2.0', href: 'https://github.com/wesichain/wesichain/blob/main/LICENSE-APACHE', external: true },
+  ],
+};
+---
+
+<footer class="border-t border-neutral-800 bg-neutral-950">
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
+      <div class="col-span-2 md:col-span-1">
+        <span class="text-lg font-bold text-white">Wesichain</span>
+        <p class="mt-2 text-sm text-neutral-400">
+          Production-grade LLM agents in Rust
+        </p>
+      </div>
+
+      {Object.entries(footerLinks).map(([category, links]) => (
+        <div>
+          <h3 class="text-sm font-semibold text-white">{category}</h3>
+          <ul class="mt-4 space-y-3">
+            {links.map(link => (
+              <li>
+                <a
+                  href={link.href}
+                  target={link.external ? '_blank' : undefined}
+                  rel={link.external ? 'noopener noreferrer' : undefined}
+                  class="text-sm text-neutral-400 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-8 border-t border-neutral-800 pt-8">
+      <p class="text-sm text-neutral-500">
+        © {currentYear} Wesichain. Dual-licensed under MIT and Apache-2.0.
+      </p>
+    </div>
+  </div>
+</footer>

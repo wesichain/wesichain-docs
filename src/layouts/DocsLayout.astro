@@ -1,0 +1,33 @@
+---
+import SiteLayout from './SiteLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  headings?: Array<{
+    depth: number;
+    slug: string;
+    text: string;
+  }>;
+}
+
+const { title, description, headings = [] } = Astro.props;
+---
+
+<SiteLayout title={title} description={description} variant="docs">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex gap-8 py-8">
+      <Sidebar />
+
+      <article class="flex-1 min-w-0">
+        <div class="prose-docs">
+          <slot />
+        </div>
+      </article>
+
+      <TableOfContents headings={headings} />
+    </div>
+  </div>
+</SiteLayout>

@@ -1,0 +1,29 @@
+---
+title: Installation
+description: Get started with Wesichain in your Rust project
+order: 1
+group: Getting Started
+---
+
+# Installation
+
+Wesichain is distributed as a modular crate family. Install only what you need.
+
+## Quick Start
+
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+wesichain-core = "0.1.0"
+wesichain-graph = "0.1.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+```
+
+## Available Crates
+
+| Crate | Purpose |
+|-------|---------|
+| `wesichain-core` | Core traits and runtime primitives |
+| `wesichain-graph` | Stateful graph execution |
+| `wesichain-rag` | RAG pipeline helpers |

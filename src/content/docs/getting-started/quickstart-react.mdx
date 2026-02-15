@@ -1,0 +1,49 @@
+---
+title: Quick Start - ReAct Agent
+description: Build your first ReAct agent with Wesichain
+order: 2
+group: Getting Started
+---
+
+# Quick Start: ReAct Agent
+
+Build a tool-using agent that reasons and acts in a loop.
+
+## What You'll Build
+
+A ReAct agent that:
+1. Takes user input
+2. Reasons about what tool to use
+3. Calls tools and observes results
+4. Continues until it has a final answer
+
+## Prerequisites
+
+- Rust 1.75+ installed
+- OpenAI API key (or other LLM provider)
+
+## Setup
+
+Create a new Rust project:
+
+```bash
+cargo new my-agent
+cd my-agent
+```
+
+Add dependencies to `Cargo.toml`:
+
+```toml
+[dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+wesichain-core = "0.1.0"
+wesichain-graph = "0.1.0"
+wesichain-llm = "0.1.0"
+```
+
+## Run It
+
+```bash
+export OPENAI_API_KEY="your-key"
+cargo run
+```

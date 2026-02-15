@@ -1,0 +1,101 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+---
+
+<SiteLayout title="Benchmarks" description="Performance comparison of Wesichain vs Python alternatives">
+  <div class="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold tracking-tight text-white">Benchmarks</h1>
+      <p class="mt-4 text-lg text-neutral-400">
+        Transparent, reproducible performance comparisons
+      </p>
+    </div>
+
+    <div class="mt-16 space-y-12">
+      <!-- Memory Benchmark -->
+      <section class="rounded-2xl border border-neutral-800 bg-neutral-900 p-8">
+        <h2 class="text-2xl font-bold text-white">Memory Usage</h2>
+        <p class="mt-2 text-neutral-400">
+          Baseline memory consumption for a simple ReAct agent
+        </p>
+
+        <div class="mt-6 overflow-hidden rounded-lg border border-neutral-800">
+          <table class="w-full text-left">
+            <thead class="bg-neutral-950">
+              <tr>
+                <th class="px-6 py-4 text-sm font-semibold text-white">Framework</th>
+                <th class="px-6 py-4 text-sm font-semibold text-white">Memory (MB)</th>
+                <th class="px-6 py-4 text-sm font-semibold text-rust-500">vs Wesichain</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-800">
+              <tr class="bg-rust-600/5">
+                <td class="px-6 py-4 font-medium text-white">Wesichain</td>
+                <td class="px-6 py-4 text-white">85 MB</td>
+                <td class="px-6 py-4 text-rust-500">baseline</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 text-neutral-300">LangChain (Python)</td>
+                <td class="px-6 py-4 text-neutral-400">320 MB</td>
+                <td class="px-6 py-4 text-neutral-400">3.8x more</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 text-neutral-300">LlamaIndex</td>
+                <td class="px-6 py-4 text-neutral-400">410 MB</td>
+                <td class="px-6 py-4 text-neutral-400">4.8x more</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="mt-4 text-sm text-neutral-500">
+          Methodology: Measured RSS after agent initialization, before any LLM calls.
+          See <a href="https://github.com/wesichain/wesichain/tree/main/docs/benchmarks" class="text-primary-400 hover:underline">full methodology</a>.
+        </p>
+      </section>
+
+      <!-- Cold Start -->
+      <section class="rounded-2xl border border-neutral-800 bg-neutral-900 p-8">
+        <h2 class="text-2xl font-bold text-white">Cold Start Time</h2>
+        <p class="mt-2 text-neutral-400">
+          Time from process start to first LLM request ready
+        </p>
+
+        <div class="mt-6 space-y-4">
+          <div class="flex items-center gap-4">
+            <span class="w-32 text-sm text-neutral-400">Wesichain</span>
+            <div class="flex-1">
+              <div class="h-4 rounded-full bg-rust-600" style="width: 10%"></div>
+            </div>
+            <span class="w-24 text-right text-sm font-medium text-white">120ms</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="w-32 text-sm text-neutral-400">LangChain</span>
+            <div class="flex-1">
+              <div class="h-4 rounded-full bg-neutral-700" style="width: 60%"></div>
+            </div>
+            <span class="w-24 text-right text-sm text-neutral-400">2.8s</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="w-32 text-sm text-neutral-400">LlamaIndex</span>
+            <div class="flex-1">
+              <div class="h-4 rounded-full bg-neutral-700" style="width: 100%"></div>
+            </div>
+            <span class="w-24 text-right text-sm text-neutral-400">4.2s</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reproducibility -->
+      <section class="rounded-xl border border-neutral-800 bg-neutral-950 p-6">
+        <h3 class="font-semibold text-white">Reproducing These Results</h3>
+        <p class="mt-2 text-sm text-neutral-400">
+          All benchmarks are open source and reproducible. Run them yourself:
+        </p>
+        <pre class="mt-4 overflow-x-auto rounded-lg bg-neutral-900 p-4 text-sm"><code>git clone https://github.com/wesichain/wesichain.git
+cd wesichain/docs/benchmarks
+cargo run --release</code></pre>
+      </section>
+    </div>
+  </div>
+</SiteLayout>

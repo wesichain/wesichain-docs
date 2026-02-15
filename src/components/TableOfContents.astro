@@ -1,0 +1,36 @@
+---
+interface Props {
+  headings: Array<{
+    depth: number;
+    slug: string;
+    text: string;
+  }>;
+}
+
+const { headings } = Astro.props;
+---
+
+{headings.length > 0 && (
+  <aside class="hidden xl:block w-64 shrink-0">
+    <nav class="sticky top-20">
+      <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+        On this page
+      </h3>
+      <ul class="space-y-2">
+        {headings.filter(h => h.depth <= 3).map(heading => (
+          <li>
+            <a
+              href={`#${heading.slug}`}
+              class:list={[
+                'block text-sm transition-colors hover:text-white',
+                heading.depth === 2 ? 'text-neutral-400' : 'pl-4 text-neutral-500'
+              ]}
+            >
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+)}
