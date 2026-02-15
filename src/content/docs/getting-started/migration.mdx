@@ -1,0 +1,376 @@
+---
+title: Migration Guide
+description: Migrate from Python LangChain/LangGraph to Rust Wesichain
+group: Getting Started
+order: 4
+---
+
+# Migration Guide
+
+Moving from Python LangChain/LangGraph to Rust Wesichain? This guide provides side-by-side comparisons to make the transition seamless.
+
+## Quick Comparison
+
+| Concept | Python (LangChain) | Rust (Wesichain) |
+|---------|-------------------|------------------|
+| Core trait | `Runnable` | `Runnable<I, O>` |
+| Composition | `\|` operator | `.then()` method |
+| Async | Optional `ainvoke()` | Always async (`invoke().await`) |
+| Streaming | `astream()` | `stream()` returns `StreamEvent` |
+| Tools | `@tool` decorator | `impl Tool` trait |
+| State | `StateGraph` | `GraphBuilder` |
+| Checkpointing | `checkpointer=` | `.with_checkpointer()` |
+
+## Basic Chain
+
+### Python
+
+```python
+from langchain import PromptTemplate, OpenAI, StrOutputParser
+
+prompt = PromptTemplate.from_template("Tell me about {topic}")
+llm = OpenAI()
+chain = prompt | llm | StrOutputParser()
+
+result = chain.invoke({"topic": "Rust"})
+print(result)
+```
+
+### Rust
+
+```rust
+use wesichain::prelude::*;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let prompt = PromptTemplate::new("Tell me about {topic}");
+    let llm = OpenAI::new();
+    let parser = StrOutputParser;
+
+    let chain = prompt
+        .then(llm)
+        .then(parser);
+
+    let result = chain.invoke("Rust".to_string()).await?;
+    println!("{}", result);
+    Ok(())
+}
+```
+
+## Tools
+
+### Python
+
+```python
+from langchain.tools import tool
+
+@tool
+def search(query: str) -> str:
+    """Search for information."""
+    return f"Results for: {query}"
+
+@tool
+def get_current_time() -> str:
+    """Get the current time."""
+    from datetime import datetime
+    return datetime.now().isoformat()
+```
+
+### Rust
+
+```rust
+use wesichain::prelude::*;
+use async_trait::async_trait;
+use serde_json::Value;
+
+#[derive(Default)]
+struct SearchTool;
+
+#[async_trait]
+impl Tool for SearchTool {
+    fn name(&self) -> &str { "search" }
+    fn description(&self) -> &str { "Search for information" }
+    fn schema(&self) -> Value {
+        serde_json::json!({
+            "type": "object",
+            "properties": {
+                "query": { "type": "string" }
+            },
+            "required": ["query"]
+        })
+    }
+    async fn invoke(&self, input: Value) -> Result<Value, ToolError> {
+        let query = input["query"].as_str().ok_or(ToolError::InvalidInput)?;
+        Ok(Value::String(format!("Results for: {}", query)))
+    }
+}
+```
+
+## ReAct Agent
+
+### Python
+
+```python
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain import hub
+
+prompt = hub.pull("hwchase17/react")
+agent = create_react_agent(llm, tools, prompt)
+agent_executor = AgentExecutor(agent=agent, tools=tools)
+
+result = agent_executor.invoke({"input": "What is the current time?"})
+```
+
+### Rust
+
+```rust
+use wesichain::prelude::*;
+
+let agent = AgentBuilder::new()
+    .with_llm(OpenAI::new())
+    .with_tool(SearchTool)
+    .with_tool(CurrentTimeTool)
+    .with_system_prompt("You are a helpful assistant.")
+    .build()?;
+
+let result = agent.run("What is the current time?").await?;
+println!("{}", result);
+```
+
+## Streaming
+
+### Python
+
+```python
+async for event in agent_executor.astream_events(...):
+    if event["event"] == "on_llm_stream":
+        print(event["data"]["chunk"], end="")
+    elif event["event"] == "on_tool_start":
+        print(f"\nUsing tool: {event['name']}")
+```
+
+### Rust
+
+```rust
+let mut stream = agent.stream("What is the current time?");
+
+while let Some(event) = stream.next().await {
+    match event? {
+        StreamEvent::Token(token) => print!("{}", token),
+        StreamEvent::ToolCall { name, .. } => {
+            println!("\nUsing tool: {}", name);
+        }
+        StreamEvent::Final(answer) => println!("\nFinal: {}", answer),
+        _ => {}
+    }
+}
+```
+
+## State Graph
+
+### Python (LangGraph)
+
+```python
+from langgraph.graph import StateGraph, END
+
+class State(TypedDict):
+    query: str
+    documents: list[str]
+    answer: str
+
+def retrieve(state: State):
+    return {"documents": [f"doc for '{state['query']}'"]}
+
+def generate(state: State):
+    return {"answer": f"Answer: {state['documents']}"}
+
+workflow = StateGraph(State)
+workflow.add_node("retrieve", retrieve)
+workflow.add_node("generate", generate)
+workflow.add_edge("retrieve", "generate")
+workflow.add_edge("generate", END)
+workflow.set_entry_point("retrieve")
+
+app = workflow.compile()
+result = app.invoke({"query": "hello"})
+```
+
+### Rust (Wesichain)
+
+```rust
+use wesichain_graph::{GraphBuilder, GraphState, StateSchema, StateUpdate};
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Default, Serialize, Deserialize)]
+struct RagState {
+    query: String,
+    documents: Vec<String>,
+    answer: Option<String>,
+}
+
+impl StateSchema for RagState {
+    fn merge(current: &Self, update: Self) -> Self {
+        let mut docs = current.documents.clone();
+        docs.extend(update.documents);
+        Self {
+            query: if update.query.is_empty() { current.query.clone() } else { update.query },
+            documents: docs,
+            answer: update.answer.or_else(|| current.answer.clone()),
+        }
+    }
+}
+
+let graph = GraphBuilder::new()
+    .add_node("retrieve", Retriever)
+    .add_node("generate", Generator)
+    .add_edge("retrieve", "generate")
+    .set_entry("retrieve")
+    .build()?;
+
+let state = GraphState::new(RagState {
+    query: "hello".to_string(),
+    ..Default::default()
+});
+
+let result = graph.invoke_graph(state).await?;
+println!("{}", result.data.answer.unwrap());
+```
+
+## Checkpointing
+
+### Python
+
+```python
+from langgraph.checkpoint.sqlite import SqliteSaver
+
+memory = SqliteSaver.from_conn_string(":memory:")
+app = workflow.compile(checkpointer=memory)
+
+# Thread ID for persistence
+config = {"configurable": {"thread_id": "conv-123"}}
+result = app.invoke({"query": "hello"}, config)
+
+# Resume later
+result = app.invoke({"query": "tell me more"}, config)
+```
+
+### Rust
+
+```rust
+use wesichain_checkpoint_sqlite::SqliteCheckpointer;
+
+let checkpointer = SqliteCheckpointer::new("./checkpoints.db").await?;
+
+let graph = GraphBuilder::new()
+    .add_node("agent", agent)
+    .set_entry("agent")
+    .with_checkpointer(checkpointer.clone(), "thread-123")
+    .build()?;
+
+// First interaction
+let out = graph.invoke_graph(state).await?;
+
+// Resume from checkpoint
+let checkpoint = checkpointer.load("thread-123").await?.expect("checkpoint");
+let resumed = graph.invoke_graph(checkpoint.state).await?;
+```
+
+## Common Patterns
+
+### Batch Processing
+
+**Python:**
+```python
+results = chain.batch([{"topic": "A"}, {"topic": "B"}])
+```
+
+**Rust:**
+```rust
+let results = chain.batch(vec!["A".to_string(), "B".to_string()]).await?;
+```
+
+### Error Handling
+
+**Python:**
+```python
+try:
+    result = chain.invoke(...)
+except Exception as e:
+    print(f"Error: {e}")
+```
+
+**Rust:**
+```rust
+match chain.invoke(input).await {
+    Ok(result) => println!("{}", result),
+    Err(WesichainError::LlmProvider { source }) => {
+        eprintln!("LLM error: {}", source);
+    }
+    Err(e) => eprintln!("Error: {}", e),
+}
+```
+
+### Configuration
+
+**Python:**
+```python
+llm = ChatOpenAI(model="gpt-4", temperature=0.7)
+```
+
+**Rust:**
+```rust
+let llm = OpenAI::builder()
+    .model("gpt-4")
+    .temperature(0.7)
+    .build()?;
+```
+
+## Key Differences
+
+### 1. Async by Default
+
+All Wesichain operations are async. You need an async runtime:
+
+```rust
+#[tokio::main]
+async fn main() { ... }
+```
+
+### 2. Type Safety
+
+Wesichain uses Rust's type system for compile-time correctness:
+
+```rust
+// This won't compile if types don't match
+let chain = prompt
+    .then(llm)      // Output: ChatMessage
+    .then(parser);  // Input: ChatMessage, Output: String
+```
+
+### 3. No Global State
+
+Unlike some Python patterns, Wesichain has no global configuration. Everything is explicit:
+
+```rust
+// No global API keys - pass them explicitly
+let openai = OpenAI::builder()
+    .api_key(std::env::var("OPENAI_API_KEY")?)
+    .build()?;
+```
+
+### 4. Memory Management
+
+Rust's ownership model eliminates runtime GC pauses:
+
+| Metric | Python | Rust |
+|--------|--------|------|
+| Memory | ~180-250 MB baseline | ~15 MB baseline |
+| GC pauses | Yes | No |
+| Predictable | Less | More |
+
+## Getting Help
+
+- [API Reference](/docs/api) — Complete trait documentation
+- [Examples](https://github.com/wesichain/wesichain/tree/main/examples) — Working code samples
+- [Discord](https://discord.gg/wesichain) — Community support
+- [GitHub Issues](https://github.com/wesichain/wesichain/issues) — Bug reports

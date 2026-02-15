@@ -1,0 +1,39 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import WhichCrate from '../components/WhichCrate';
+---
+
+<SiteLayout title="Which Crate?" description="Find the right Wesichain crate for your project">
+  <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold tracking-tight text-white">Which Crate?</h1>
+      <p class="mt-4 text-lg text-neutral-400">
+        Answer a few questions to find the right Wesichain crate for your project
+      </p>
+    </div>
+
+    <div class="mt-12">
+      <WhichCrate client:load />
+    </div>
+
+    <div class="mt-12 rounded-xl border border-neutral-800 bg-neutral-950 p-6">
+      <h2 class="font-semibold text-white">Crate Overview</h2>
+      <p class="mt-2 text-sm text-neutral-400">
+        Wesichain is organized into focused crates. The umbrella <code class="text-rust-400">wesichain</code> crate
+        re-exports common functionality for convenience. Use individual crates when you need
+        precise dependency control.
+      </p>
+
+      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+        <a href="/docs/getting-started/installation" class="rounded-lg border border-neutral-800 bg-neutral-900 p-4 hover:border-neutral-700">
+          <h3 class="font-medium text-white">Getting Started</h3>
+          <p class="mt-1 text-sm text-neutral-400">Installation and first steps</p>
+        </a>
+        <a href="/docs/" class="rounded-lg border border-neutral-800 bg-neutral-900 p-4 hover:border-neutral-700">
+          <h3 class="font-medium text-white">Documentation</h3>
+          <p class="mt-1 text-sm text-neutral-400">Browse all guides and tutorials</p>
+        </a>
+      </div>
+    </div>
+  </div>
+</SiteLayout>

@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discord Community
+    url: https://discord.gg/wesichain
+    about: Get help and chat with the community
+  - name: Documentation
+    url: https://wesichain.dev/docs
+    about: Check the documentation first
+  - name: GitHub Discussions
+    url: https://github.com/wesichain/wesichain/discussions
+    about: Ask questions and share ideas

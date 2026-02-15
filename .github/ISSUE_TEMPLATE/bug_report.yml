@@ -1,0 +1,76 @@
+name: Bug Report
+description: Report a bug in Wesichain
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is
+      placeholder: When I try to ..., I get ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run `cargo run --example ...`
+        2. Call `agent.invoke(...)`
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Minimal Code Example
+      description: A minimal code example that reproduces the issue
+      render: rust
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened (include error messages)
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Your environment details
+      value: |
+        - Rust version: `rustc --version`
+        - Wesichain version: (from Cargo.toml)
+        - OS: (e.g., macOS 14, Ubuntu 22.04)
+        - LLM Provider: (e.g., OpenAI, Ollama)
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs/Traceback
+      description: Any relevant log output
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I've searched existing issues for similar reports
+          required: true
+        - label: I've included all the information needed to reproduce
+          required: true
