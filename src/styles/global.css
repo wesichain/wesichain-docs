@@ -1,0 +1,36 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  :root {
+    --color-bg: #0a0a0a;
+    --color-text: #fafafa;
+    --color-text-muted: #a3a3a3;
+    --color-border: #262626;
+    --color-primary: #ed6b3a;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-neutral-950 text-neutral-50 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+}
+
+@layer components {
+  .prose-docs {
+    @apply prose prose-invert prose-neutral max-w-none;
+    @apply prose-headings:font-semibold prose-headings:tracking-tight;
+    @apply prose-a:text-primary-400 prose-a:no-underline hover:prose-a:underline;
+    @apply prose-code:text-primary-300 prose-code:bg-neutral-900 prose-code:rounded prose-code:px-1.5 prose-code:py-0.5;
+    @apply prose-pre:bg-neutral-900 prose-pre:border prose-pre:border-neutral-800;
+  }
+}
