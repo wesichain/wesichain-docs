@@ -2,30 +2,30 @@
 const painPoints = [
   {
     icon: '🐌',
-    title: 'GIL-Free Parallelism',
+    title: 'Throughput Evidence',
     subtitle: 'Python: Global Interpreter Lock',
-    description: 'Multi-agent workflows are serialized by Python\'s GIL, limiting throughput to a single core.',
-    solution: 'Wesichain uses native async/await with true parallelism—scales linearly with CPU cores.',
-    stat: '10-50x',
-    statLabel: 'better throughput'
+    description: 'Published benchmark notes list typical Python recursive splitters around 50-100 MiB/s for similar workloads.',
+    solution: 'Wesichain recursive splitter measures 201-221 MiB/s in current Criterion artifacts.',
+    stat: '2-4x',
+    statLabel: 'splitter throughput range'
   },
   {
     icon: '💾',
-    title: 'Memory Efficiency',
-    subtitle: 'Python: Heavy runtime overhead',
-    description: 'LangChain needs 250-500 MB just to initialize. Memory bloat kills container density.',
-    solution: 'Wesichain agents start at 15 MB—deploy 15x more agents on the same hardware.',
-    stat: '15x',
-    statLabel: 'lower memory'
+    title: 'Reproducible Artifacts',
+    subtitle: 'Performance claims need provenance',
+    description: 'Marketing numbers drift fast when they are not tied to versioned benchmark outputs.',
+    solution: 'Wesichain keeps benchmark snapshots under docs/benchmarks/data with run metadata and hardware context.',
+    stat: 'JSON',
+    statLabel: 'snapshot artifacts'
   },
   {
     icon: '📦',
-    title: 'Simple Deployment',
-    subtitle: 'Python: Dependency complexity',
-    description: 'venv, conda, Docker layers, dependency conflicts—deploying Python is painful.',
-    solution: 'Compile to a single static binary. No runtime, no dependencies, no container bloat.',
-    stat: 'Single',
-    statLabel: 'binary output'
+    title: 'Methodology Transparency',
+    subtitle: 'Re-run locally anytime',
+    description: 'Benchmark trust comes from reproducibility, not one-off charts.',
+    solution: 'The docs include runnable commands and dataset references so teams can validate on their own hardware.',
+    stat: '1 cmd',
+    statLabel: 'to reproduce splitter benchmark'
   }
 ];
 ---
@@ -37,7 +37,7 @@ const painPoints = [
         Why Rust for LLM Agents?
       </h2>
       <p class="mt-4 text-lg text-neutral-400">
-        Solve the three biggest pain points of Python agent frameworks
+        Keep performance messaging anchored to benchmark artifacts
       </p>
     </div>
 

@@ -1,34 +1,56 @@
 ---
-title: Architecture Overview
-description: Understanding Wesichain's modular design
+title: Architecture Overview (Guide)
+description: Practical crate selection guide by use case
 order: 1
 group: Guides
 ---
 
-# Architecture Overview
+# Architecture Overview (Guide)
 
-Wesichain is built as a modular crate family, letting you install only what you need.
+This guide helps you choose crates quickly by what you are building.
 
-## Core Design Principles
+## ReAct Agent Workflows
 
-1. **Composable**: Chain components together like LEGO blocks
-2. **Type-Safe**: Leverage Rust's type system for compile-time correctness
-3. **Async-First**: Built on Tokio for high-performance concurrency
-4. **Streaming-Native**: First-class support for streaming responses
+Use:
 
-## The 15 Crates
+- `wesichain-core`
+- `wesichain-llm`
+- `wesichain-graph`
 
-### Core Layer
+Optional:
 
-| Crate | Purpose | When to Use |
-|-------|---------|-------------|
-| `wesichain-core` | Traits and primitives | Every project |
-| `wesichain-macros` | Procedural macros | For derive macros |
-| `wesichain-compat` | Migration helpers | Porting from Python |
+- `wesichain-checkpoint-sqlite` / `wesichain-checkpoint-postgres` / `wesichain-checkpoint-redis`
+- `wesichain-memory`
 
-### LLM Layer
+## Retrieval + RAG Workflows
 
-| Crate | Purpose | When to Use |
-|-------|---------|-------------|
-| `wesichain-llm` | LLM abstractions | Any LLM usage |
-| `wesichain-prompt` | Prompt templates | Structured prompting |
+Use:
+
+- `wesichain-rag`
+- `wesichain-retrieval`
+- `wesichain-embeddings`
+
+Vector DB options:
+
+- `wesichain-pinecone`
+- `wesichain-qdrant`
+- `wesichain-weaviate`
+- `wesichain-chroma`
+
+## Migration-Oriented Workflows
+
+Use:
+
+- `wesichain-compat`
+
+Pair with core graph crates while porting incrementally.
+
+## Runtime Evolution
+
+- `wesichain-agent` contains the FSM-style v0.3 runtime track.
+- For current production graph orchestration, `wesichain-graph` remains the primary entry point.
+
+## See Also
+
+- [Architecture Overview](/docs/architecture/overview)
+- [Crate Selector](/crate-selector)

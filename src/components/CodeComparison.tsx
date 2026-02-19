@@ -35,25 +35,20 @@ agent = AgentExecutor(
 )
 
 result = agent.invoke({"input": "What is 2+2?"})`,
-      issues: ['GIL-limited', '320 MB memory', '3.2s cold start'],
-      stats: { label: 'Cold Start', value: '3.2s' }
+      issues: ['Interpreter overhead', 'Runtime variability', 'GIL constraints'],
+      stats: { label: 'Splitter baseline', value: '~50-100 MiB/s' }
     },
     rust: {
-      code: `use wesichain_graph::GraphBuilder;
-use wesichain_agent::ReActAgent;
+      code: `use wesichain_graph::ReActGraphBuilder;
 
-let agent = ReActAgent::builder()
+let graph = ReActGraphBuilder::new()
     .llm(openai)
-    .tools(&[search, calc])
-    .build()?;
+    .tools(vec![search, calc])
+    .build::<AppState>()?;
 
-let graph = GraphBuilder::new()
-    .add_node("agent", agent)
-    .build();
-
-let result = graph.invoke(state).await?;`,
-      benefits: ['Native parallel', '15 MB memory', '120ms cold start'],
-      stats: { label: 'Cold Start', value: '120ms' }
+let result = graph.invoke_graph(state).await?;`,
+      benefits: ['Async-native runtime', 'Composable graph state', 'Reproducible benchmarks'],
+      stats: { label: 'Splitter benchmark', value: '201-221 MiB/s' }
     }
   },
   {
@@ -71,7 +66,7 @@ qa = RetrievalQA.from_chain_type(
 
 result = qa.invoke(query)`,
       issues: ['Async not native', 'Memory-heavy', 'Complex deps'],
-      stats: { label: 'Memory', value: '~400 MB' }
+      stats: { label: 'Complexity', value: 'Higher runtime overhead' }
     },
     rust: {
       code: `use wesichain_rag::{Retriever, Pipeline};
@@ -83,8 +78,8 @@ let pipeline = Pipeline::builder()
     .build()?;
 
 let stream = pipeline.stream(query).await?;`,
-      benefits: ['Streaming-native', 'Low memory', 'Single binary'],
-      stats: { label: 'Memory', value: '~25 MB' }
+      benefits: ['Streaming-native', 'Typed interfaces', 'Modular crates'],
+      stats: { label: 'Artifact-backed', value: 'Bench snapshots in repo' }
     }
   },
   {
@@ -101,21 +96,20 @@ builder.add_edge("start", "agent")
 graph = builder.compile(checkpointer=MemorySaver())
 result = graph.invoke(state, config)`,
       issues: ['Limited checkpointing', 'State serialization', 'Debugging difficulty'],
-      stats: { label: 'Throughput', value: 'GIL-limited' }
+      stats: { label: 'Persistence', value: 'Depends on integration setup' }
     },
     rust: {
-      code: `use wesichain_graph::{GraphBuilder, SqliteCheckpointer};
+      code: `use wesichain_graph::GraphBuilder;
 
 let graph = GraphBuilder::new()
     .add_node("agent", agent)
-    .add_edge(START, "agent")
-    .with_checkpointer(SqliteCheckpointer::new(pool))
+    .set_entry("agent")
+    .with_checkpointer(checkpointer, "thread-1")
     .build()?;
 
-// Pause and resume anytime
-let state = graph.checkpoint().await?;`,
+let result = graph.invoke_graph(state).await?;`,
       benefits: ['Full checkpointing', 'Type-safe state', 'Debuggable'],
-      stats: { label: 'Throughput', value: 'Scales with cores' }
+      stats: { label: 'Execution model', value: 'Stateful + resumable' }
     }
   }
 ];
@@ -239,7 +233,7 @@ export function CodeComparison() {
       <div className="mt-4 flex items-center justify-center gap-4 text-sm">
         <span className="text-red-400">⚠️ Python baseline</span>
         <span className="text-neutral-600">→</span>
-        <span className="text-green-400 font-medium">✅ Up to 27x faster with Rust</span>
+        <span className="text-green-400 font-medium">✅ Published splitter benchmark shows ~2-4x throughput improvement</span>
       </div>
     </div>
   );

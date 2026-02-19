@@ -1,49 +1,64 @@
 ---
 title: Quick Start - ReAct Agent
-description: Build your first ReAct agent with Wesichain
+description: Build a tool-using ReAct graph in Wesichain
 order: 2
 group: Getting Started
 ---
 
 # Quick Start: ReAct Agent
 
-Build a tool-using agent that reasons and acts in a loop.
+This quick start uses the composable ReAct subgraph builder (`ReActGraphBuilder`).
 
-## What You'll Build
-
-A ReAct agent that:
-1. Takes user input
-2. Reasons about what tool to use
-3. Calls tools and observes results
-4. Continues until it has a final answer
-
-## Prerequisites
-
-- Rust 1.75+ installed
-- OpenAI API key (or other LLM provider)
-
-## Setup
-
-Create a new Rust project:
-
-```bash
-cargo new my-agent
-cd my-agent
-```
-
-Add dependencies to `Cargo.toml`:
+## 1) Add Dependencies
 
 ```toml
 [dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-wesichain-core = "0.1.0"
-wesichain-graph = "0.1.0"
-wesichain-llm = "0.1.0"
+wesichain-core = "0.2.1"
+wesichain-llm = "0.2.1"
+wesichain-graph = "0.2.1"
 ```
 
-## Run It
+## 2) Build the Graph
+
+```rust
+use std::sync::Arc;
+
+use wesichain_core::{HasFinalOutput, HasUserInput, ScratchpadState, Tool, ToolCallingLlm};
+use wesichain_graph::{GraphState, ReActGraphBuilder, StateSchema};
+
+// AppState should implement:
+// StateSchema<Update = AppState> + ScratchpadState + HasUserInput + HasFinalOutput + Default
+
+let llm: Arc<dyn ToolCallingLlm> = Arc::new(my_llm);
+let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(CalculatorTool), Arc::new(SearchTool)];
+
+let graph = ReActGraphBuilder::new()
+    .llm(llm)
+    .tools(tools)
+    .build::<AppState>()?;
+
+let initial = GraphState::new(AppState::from_input("Find 2+2 and explain it."));
+let result = graph.invoke_graph(initial).await?;
+println!("{:?}", result.data);
+```
+
+## 3) Run a Working Example
+
+From the Wesichain repository root:
 
 ```bash
-export OPENAI_API_KEY="your-key"
-cargo run
+cargo run -p wesichain-examples --bin react_agent_subgraph
 ```
+
+You can also run graph-level examples:
+
+```bash
+cargo run -p wesichain-graph --example react_agent
+cargo run -p wesichain-graph --example persistent_conversation
+```
+
+## Notes
+
+- `ReActAgentNode` is still available for compatibility.
+- For new code, prefer `ReActGraphBuilder` because it aligns with the v0.3 runtime direction.

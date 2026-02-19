@@ -24,198 +24,176 @@ const steps: Record<string, Step> = {
   start: {
     id: 'start',
     question: 'What are you building?',
-    description: 'Choose the primary use case for your project',
+    description: 'Choose your primary project goal',
     options: [
-      { label: 'A ReAct agent with tools', next: 'agent-memory' },
-      { label: 'A RAG pipeline', next: 'rag-complexity' },
-      { label: 'A custom LLM workflow', next: 'workflow-type' },
-      { label: 'Just getting started', result: 'wesichain' },
+      { label: 'ReAct agent with tools', next: 'agent-runtime' },
+      { label: 'RAG application', next: 'rag-store' },
+      { label: 'Custom graph workflow', next: 'graph-persistence' },
+      { label: 'Migrating from Python', next: 'migration-path' },
     ],
   },
-  'agent-memory': {
-    id: 'agent-memory',
-    question: 'Does your agent need persistence?',
-    description: 'Save and resume agent state across restarts',
+  'agent-runtime': {
+    id: 'agent-runtime',
+    question: 'Which runtime style do you want?',
     options: [
-      { label: 'Yes, I need checkpointing', next: 'checkpoint-backend' },
-      { label: 'No, in-memory is fine', result: 'wesichain-agent' },
+      { label: 'Graph-based ReAct (recommended)', next: 'agent-persistence' },
+      { label: 'FSM/event runtime (v0.3 track)', result: 'wesichain-agent' },
+    ],
+  },
+  'agent-persistence': {
+    id: 'agent-persistence',
+    question: 'Do you need resumable persistence?',
+    options: [
+      { label: 'No, in-memory is fine', result: 'graph-react-minimal' },
+      { label: 'Yes, local SQLite', result: 'graph-react-sqlite' },
+      { label: 'Yes, PostgreSQL', result: 'graph-react-postgres' },
+      { label: 'Yes, Redis', result: 'graph-react-redis' },
+    ],
+  },
+  'graph-persistence': {
+    id: 'graph-persistence',
+    question: 'Does this graph need checkpoint persistence?',
+    options: [
+      { label: 'No persistence yet', result: 'wesichain-graph' },
+      { label: 'Yes, I need persistence', next: 'checkpoint-backend' },
     ],
   },
   'checkpoint-backend': {
     id: 'checkpoint-backend',
-    question: 'Which checkpoint backend?',
+    question: 'Which checkpoint backend fits best?',
     options: [
-      { label: 'SQLite (local, embedded)', result: 'wesichain-checkpoint-sqlite' },
+      { label: 'SQLite (embedded/local)', result: 'wesichain-checkpoint-sqlite' },
       { label: 'PostgreSQL (production)', result: 'wesichain-checkpoint-postgres' },
-      { label: 'Custom SQL backend', result: 'wesichain-checkpoint-sql' },
+      { label: 'Redis (session-heavy)', result: 'wesichain-checkpoint-redis' },
+      { label: 'Implement custom SQL', result: 'wesichain-checkpoint-sql' },
     ],
   },
-  'rag-complexity': {
-    id: 'rag-complexity',
-    question: 'How complex is your RAG pipeline?',
+  'rag-store': {
+    id: 'rag-store',
+    question: 'Where are your vectors stored?',
     options: [
-      { label: 'Simple: vector search + generate', result: 'wesichain-rag' },
-      { label: 'Advanced: multi-step retrieval, reranking', next: 'retrieval-source' },
-    ],
-  },
-  'retrieval-source': {
-    id: 'retrieval-source',
-    question: 'Where are your documents stored?',
-    options: [
+      { label: 'Not sure yet / local first', result: 'wesichain-rag' },
       { label: 'Pinecone', result: 'wesichain-pinecone' },
-      { label: 'In-memory or custom vector store', result: 'wesichain-retrieval' },
+      { label: 'Qdrant', result: 'wesichain-qdrant' },
+      { label: 'Weaviate', result: 'wesichain-weaviate' },
+      { label: 'Chroma', result: 'wesichain-chroma' },
     ],
   },
-  'workflow-type': {
-    id: 'workflow-type',
-    question: 'What kind of workflow?',
+  'migration-path': {
+    id: 'migration-path',
+    question: 'How do you want to migrate?',
     options: [
-      { label: 'Sequential chain (prompt → LLM → parser)', result: 'wesichain-core' },
-      { label: 'State graph with conditional routing', result: 'wesichain-graph' },
-      { label: 'Streaming with callbacks', next: 'observability' },
-    ],
-  },
-  observability: {
-    id: 'observability',
-    question: 'Do you need observability?',
-    options: [
-      { label: 'LangSmith integration', result: 'wesichain-langsmith' },
-      { label: 'Custom tracing', result: 'wesichain-core' },
+      { label: 'Incremental compatibility-first', result: 'wesichain-compat' },
+      { label: 'Fresh Rust implementation', result: 'graph-react-minimal' },
     ],
   },
 };
 
 const crateResults: Record<string, CrateResult> = {
-  wesichain: {
-    crate: 'wesichain',
-    description: 'The umbrella crate — best for getting started. Includes all core functionality with sensible defaults.',
-    install: 'cargo add wesichain --features llm-ollama',
-    example: `use wesichain::prelude::*;
-
-#[tokio::main]
-async fn main() -> Result<()> {
-    let agent = AgentBuilder::new()
-        .with_llm(Ollama::new())
-        .with_tool(Calculator)
-        .build()?;
-
-    let result = agent.run("What is 2 + 2?").await?;
-    println!("{}", result);
-    Ok(())
-}`,
+  'graph-react-minimal': {
+    crate: 'wesichain-core + wesichain-llm + wesichain-graph',
+    description:
+      'Recommended default for new ReAct and orchestration projects. Uses the graph runtime and composable ReAct subgraph builder.',
+    install: `cargo add wesichain-core@0.2.1\ncargo add wesichain-llm@0.2.1\ncargo add wesichain-graph@0.2.1`,
+    example: `use wesichain_graph::ReActGraphBuilder;\n\nlet graph = ReActGraphBuilder::new()\n    .llm(llm)\n    .tools(tools)\n    .build::<AppState>()?;`,
+  },
+  'graph-react-sqlite': {
+    crate: 'wesichain-graph + wesichain-checkpoint-sqlite',
+    description:
+      'Best for single-node deployments, local apps, and embedded persistence.',
+    install:
+      'cargo add wesichain-graph@0.2.1\ncargo add wesichain-checkpoint-sqlite@0.2.1',
+    example: `let graph = GraphBuilder::new()\n    .add_node("agent", agent_node)\n    .set_entry("agent")\n    .with_checkpointer(sqlite_checkpointer, "thread-1")\n    .build();`,
+  },
+  'graph-react-postgres': {
+    crate: 'wesichain-graph + wesichain-checkpoint-postgres',
+    description: 'Production-oriented persistence with Postgres-backed checkpoints.',
+    install:
+      'cargo add wesichain-graph@0.2.1\ncargo add wesichain-checkpoint-postgres@0.2.1',
+    example: `let checkpointer = PostgresCheckpointer::builder(database_url)\n    .max_connections(20)\n    .build()\n    .await?;`,
+  },
+  'graph-react-redis': {
+    crate: 'wesichain-graph + wesichain-checkpoint-redis',
+    description: 'Low-latency checkpoint storage for high-throughput session workflows.',
+    install: 'cargo add wesichain-graph@0.2.1\ncargo add wesichain-checkpoint-redis@0.2.1',
+    example: `let graph = GraphBuilder::new()\n    .with_checkpointer(redis_checkpointer, "session-42")\n    .build();`,
   },
   'wesichain-agent': {
     crate: 'wesichain-agent',
-    description: 'ReAct agent implementation with tool calling and memory. Use directly if you want more control over dependencies.',
-    install: 'cargo add wesichain-agent',
-    example: `use wesichain_agent::{Agent, Tool};
-use wesichain_llm::Ollama;
-
-let agent = Agent::builder()
-    .llm(Ollama::new())
-    .tool(Calculator)
-    .max_iterations(10)
-    .build();`,
-  },
-  'wesichain-checkpoint-sqlite': {
-    crate: 'wesichain-checkpoint-sqlite',
-    description: 'SQLite-based checkpointing for resumable agents. Perfect for single-node deployments.',
-    install: 'cargo add wesichain-checkpoint-sqlite',
-    example: `use wesichain_checkpoint_sqlite::SqliteCheckpointer;
-
-let checkpointer = SqliteCheckpointer::new("./checkpoints.db").await?;
-let agent = Agent::builder()
-    .checkpointer(checkpointer)
-    .build();`,
-  },
-  'wesichain-checkpoint-postgres': {
-    crate: 'wesichain-checkpoint-postgres',
-    description: 'PostgreSQL checkpointing for distributed production deployments.',
-    install: 'cargo add wesichain-checkpoint-postgres',
-    example: `use wesichain_checkpoint_postgres::PostgresCheckpointer;
-
-let checkpointer = PostgresCheckpointer::new(
-    "postgres://user:pass@localhost/wesichain"
-).await?;`,
-  },
-  'wesichain-checkpoint-sql': {
-    crate: 'wesichain-checkpoint-sql',
-    description: 'Generic SQL checkpointer trait. Implement this for custom database backends.',
-    install: 'cargo add wesichain-checkpoint-sql',
-    example: `use wesichain_checkpoint_sql::{SqlCheckpointer, CheckpointRow};
-
-#[async_trait]
-impl SqlCheckpointer for MyBackend {
-    async fn save(&self, row: CheckpointRow) -> Result<()> { ... }
-}`,
-  },
-  'wesichain-rag': {
-    crate: 'wesichain-rag',
-    description: 'High-level RAG pipeline with retrieval and generation.',
-    install: 'cargo add wesichain-rag',
-    example: `use wesichain_rag::{RagPipeline, Document};
-
-let pipeline = RagPipeline::builder()
-    .embedder(Ollama::new())
-    .vector_store(store)
-    .build();
-
-let answer = pipeline.query("What is Wesichain?").await?;`,
-  },
-  'wesichain-pinecone': {
-    crate: 'wesichain-pinecone',
-    description: 'Pinecone vector store integration for production RAG.',
-    install: 'cargo add wesichain-pinecone',
-    example: `use wesichain_pinecone::PineconeStore;
-
-let store = PineconeStore::new("api-key", "index-name").await?;`,
-  },
-  'wesichain-retrieval': {
-    crate: 'wesichain-retrieval',
-    description: 'Document loading, text splitting, and vector search utilities.',
-    install: 'cargo add wesichain-retrieval',
-    example: `use wesichain_retrieval::{TextSplitter, Document};
-
-let splitter = TextSplitter::recursive()
-    .chunk_size(1000)
-    .overlap(200);
-
-let chunks = splitter.split(document);`,
-  },
-  'wesichain-core': {
-    crate: 'wesichain-core',
-    description: 'Core traits and types (Runnable, Chain, Tool, StreamEvent). Build your own abstractions.',
-    install: 'cargo add wesichain-core',
-    example: `use wesichain_core::{Runnable, StreamEvent};
-
-#[async_trait]
-impl Runnable<String, String> for MyComponent {
-    async fn invoke(&self, input: String) -> Result<String> {
-        Ok(input.to_uppercase())
-    }
-}`,
+    description:
+      'FSM/event runtime track for v0.3. Ideal if you are building around explicit runtime phases and event streams.',
+    install: 'cargo add wesichain-agent@0.2.1',
+    example: `use wesichain_agent::{AgentRuntime, AgentState};\n\n// Build policies, adapters, and tooling around AgentRuntime`,
   },
   'wesichain-graph': {
     crate: 'wesichain-graph',
-    description: 'Stateful graph execution with conditional edges and checkpointing per node.',
-    install: 'cargo add wesichain-graph',
-    example: `use wesichain_graph::{GraphBuilder, StateSchema};
-
-let graph = GraphBuilder::new()
-    .add_node("retriever", retriever)
-    .add_node("generator", generator)
-    .add_edge("retriever", "generator")
-    .set_entry("retriever")
-    .build()?;`,
+    description:
+      'State graph runtime with conditional edges, concurrency, interrupts, and observer hooks.',
+    install: 'cargo add wesichain-graph@0.2.1',
+    example: `let graph = GraphBuilder::new()\n    .add_node("a", node_a)\n    .add_node("b", node_b)\n    .add_edge("a", "b")\n    .set_entry("a")\n    .build();`,
   },
-  'wesichain-langsmith': {
-    crate: 'wesichain-langsmith',
-    description: 'LangSmith observability integration for tracing and monitoring.',
-    install: 'cargo add wesichain-langsmith',
-    example: `use wesichain_langsmith::LangSmithTracer;
-
-let tracer = LangSmithTracer::new("api-key");
-let chain = chain.with_callback(tracer);`,
+  'wesichain-checkpoint-sqlite': {
+    crate: 'wesichain-checkpoint-sqlite',
+    description: 'SQLite checkpoint backend for resumable workflows.',
+    install: 'cargo add wesichain-checkpoint-sqlite@0.2.1',
+    example: `let checkpointer = SqliteCheckpointer::builder("sqlite://./app.db")\n    .max_connections(5)\n    .build()\n    .await?;`,
+  },
+  'wesichain-checkpoint-postgres': {
+    crate: 'wesichain-checkpoint-postgres',
+    description: 'Postgres checkpoint backend for distributed systems.',
+    install: 'cargo add wesichain-checkpoint-postgres@0.2.1',
+    example: `let checkpointer = PostgresCheckpointer::builder(database_url)\n    .build()\n    .await?;`,
+  },
+  'wesichain-checkpoint-redis': {
+    crate: 'wesichain-checkpoint-redis',
+    description: 'Redis checkpoint backend for low-latency persistence.',
+    install: 'cargo add wesichain-checkpoint-redis@0.2.1',
+    example: `let checkpointer = RedisCheckpointer::builder(redis_url)\n    .build()\n    .await?;`,
+  },
+  'wesichain-checkpoint-sql': {
+    crate: 'wesichain-checkpoint-sql',
+    description: 'Shared SQL checkpoint operations for custom SQL backends.',
+    install: 'cargo add wesichain-checkpoint-sql@0.2.1',
+    example: 'Use this crate when implementing your own SQL storage backend.',
+  },
+  'wesichain-rag': {
+    crate: 'wesichain-rag',
+    description:
+      'High-level RAG API on top of core graph/retrieval building blocks. Great starting point for document QA.',
+    install:
+      'cargo add wesichain-rag@0.2.1\ncargo add wesichain-checkpoint-sqlite@0.2.1',
+    example: `let rag = WesichainRag::builder()\n    .with_checkpointer(checkpointer)\n    .build()?;`,
+  },
+  'wesichain-pinecone': {
+    crate: 'wesichain-pinecone',
+    description: 'Pinecone vector store integration for production RAG systems.',
+    install: 'cargo add wesichain-pinecone@0.2.1',
+    example: 'Use with wesichain-rag or custom retrieval flows.',
+  },
+  'wesichain-qdrant': {
+    crate: 'wesichain-qdrant',
+    description: 'Qdrant vector store integration with metadata filter support.',
+    install: 'cargo add wesichain-qdrant@0.2.1',
+    example: 'Use with wesichain-retrieval and wesichain-rag.',
+  },
+  'wesichain-weaviate': {
+    crate: 'wesichain-weaviate',
+    description: 'Weaviate vector store integration with GraphQL filter translation.',
+    install: 'cargo add wesichain-weaviate@0.2.1',
+    example: 'Use with wesichain-retrieval and wesichain-rag.',
+  },
+  'wesichain-chroma': {
+    crate: 'wesichain-chroma',
+    description: 'Chroma integration for local and prototyping retrieval setups.',
+    install: 'cargo add wesichain-chroma@0.2.1',
+    example: 'Use with wesichain-retrieval and wesichain-rag.',
+  },
+  'wesichain-compat': {
+    crate: 'wesichain-compat',
+    description:
+      'Compatibility-focused crate for incremental migration from LangChain/LangGraph patterns.',
+    install: 'cargo add wesichain-compat@0.2.1',
+    example: 'Use alongside core graph crates while migrating system by system.',
   },
 };
 
@@ -248,7 +226,7 @@ export default function WhichCrate() {
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 sm:p-8">
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-sm font-medium text-rust-500">Recommended Crate</span>
+            <span className="text-sm font-medium text-rust-500">Recommended Crate Set</span>
             <h3 className="mt-1 text-2xl font-bold text-white">{result.crate}</h3>
           </div>
           <button

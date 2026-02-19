@@ -38,9 +38,9 @@ Add dependencies to `Cargo.toml`:
 ```toml
 [dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-wesichain-core = "0.1.0"
-wesichain-rag = "0.1.0"
-wesichain-checkpoint-sqlite = "0.1.0"
+wesichain-core = "0.2.1"
+wesichain-rag = "0.2.1"
+wesichain-checkpoint-sqlite = "0.2.1"
 futures = "0.3"
 ```
 
@@ -256,6 +256,6 @@ let answer2 = rag.query_stream(RagQueryRequest {
 
 ## Next Steps
 
-- [Add custom embeddings model](/docs/guides/custom-embeddings)
-- [Configure vector stores](/docs/guides/vector-stores)
-- [Build a web API with axum](/docs/guides/web-api)
+- [Simple Graph Tutorial](/docs/guides/simple-graph)
+- [Checkpointing Guide](/docs/guides/checkpointing)
+- [Migration Guide](/docs/getting-started/migration)

@@ -26,8 +26,7 @@ use async_trait::async_trait;
 use futures::stream::{self, StreamExt};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use wesichain_agent::Tool;
-use wesichain_core::{Runnable, StreamEvent, ToolError, Value, WesichainError};
+use wesichain_core::{Runnable, StreamEvent, Tool, ToolError, Value, WesichainError};
 use wesichain_graph::{
     ExecutionConfig, GraphBuilder, GraphError, GraphState, HasToolCalls, StateSchema, StateUpdate,
     ToolNode,
@@ -43,7 +42,9 @@ struct AgentState {
 }
 
 impl StateSchema for AgentState {
-    fn merge(current: &Self, update: Self) -> Self {
+    type Update = Self;
+
+    fn apply(current: &Self, update: Self::Update) -> Self {
         let input = if update.input.is_empty() {
             current.input.clone()
         } else {
@@ -170,9 +171,9 @@ async fn main() -> Result<(), GraphError> {
         .add_node("final", Final)
         .add_conditional_edge("agent", |state: &GraphState<AgentState>| {
             if state.data.tool_calls.is_empty() {
-                "final".to_string()
+                vec!["final".to_string()]
             } else {
-                "tools".to_string()
+                vec!["tools".to_string()]
             }
         })
         .add_edge("tools", "agent")
@@ -180,6 +181,7 @@ async fn main() -> Result<(), GraphError> {
             max_steps: Some(5),
             cycle_detection: false,
             cycle_window: 5,
+            ..Default::default()
         })
         .set_entry("agent")
         .build();
@@ -220,9 +222,9 @@ impl Tool for EchoTool {
 ```rust
 .add_conditional_edge("agent", |state: &GraphState<AgentState>| {
     if state.data.tool_calls.is_empty() {
-        "final".to_string()  // Done
+        vec!["final".to_string()]  // Done
     } else {
-        "tools".to_string()  // Need to call tools
+        vec!["tools".to_string()]  // Need to call tools
     }
 })
 ```
@@ -255,6 +257,6 @@ cargo run -p wesichain-graph --example react_agent
 
 ## Next Steps
 
-- [Add more tools](/docs/guides/custom-tools)
-- [Use real LLM integration](/docs/guides/llm-providers)
 - [Add checkpointing for resumability](/docs/guides/checkpointing)
+- [Use human review interrupts](/docs/guides/human-in-the-loop)
+- [Migration guide](/docs/getting-started/migration)

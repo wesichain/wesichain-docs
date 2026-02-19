@@ -1,29 +1,54 @@
 ---
 title: Installation
-description: Get started with Wesichain in your Rust project
+description: Install Wesichain crates in a Rust project
 order: 1
 group: Getting Started
 ---
 
 # Installation
 
-Wesichain is distributed as a modular crate family. Install only what you need.
+Wesichain is a modular Rust workspace. Install only the crates you need.
 
-## Quick Start
+## Requirements
 
-Add to your `Cargo.toml`:
+- Rust `1.75+`
+- Tokio runtime for async execution
+
+## Minimal Agent/Graph Setup
 
 ```toml
 [dependencies]
-wesichain-core = "0.1.0"
-wesichain-graph = "0.1.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+wesichain-core = "0.2.1"
+wesichain-llm = "0.2.1"
+wesichain-graph = "0.2.1"
 ```
 
-## Available Crates
+## Add Retrieval / RAG
 
-| Crate | Purpose |
-|-------|---------|
-| `wesichain-core` | Core traits and runtime primitives |
-| `wesichain-graph` | Stateful graph execution |
-| `wesichain-rag` | RAG pipeline helpers |
+```toml
+[dependencies]
+wesichain-retrieval = "0.2.1"
+wesichain-rag = "0.2.1"
+```
+
+## Add Checkpoint Persistence
+
+```toml
+[dependencies]
+wesichain-checkpoint-sqlite = "0.2.1"   # local/embedded
+# or
+wesichain-checkpoint-postgres = "0.2.1" # production DB
+# or
+wesichain-checkpoint-redis = "0.2.1"    # low-latency cache/session flows
+```
+
+## Crate Catalog
+
+See the [Crate Selector](/crate-selector) for guided recommendations.
+
+## Notes
+
+- The framework is modular-first; avoid installing crates you do not need.
+- `ReActGraphBuilder` is the recommended entry point for tool-using ReAct workflows.
+- `ReActAgentNode` remains available for compatibility but is no longer the preferred path.

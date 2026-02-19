@@ -42,7 +42,16 @@ struct ReviewState {
     approved: bool,
 }
 
-impl StateSchema for ReviewState {}
+impl StateSchema for ReviewState {
+    type Update = Self;
+
+    fn apply(current: &Self, update: Self::Update) -> Self {
+        Self {
+            value: if update.value == 0 { current.value } else { update.value },
+            approved: update.approved || current.approved,
+        }
+    }
+}
 
 struct Prepare;
 
@@ -260,5 +269,5 @@ GraphBuilder::new()
 ## Next Steps
 
 - [Implement checkpoint persistence](/docs/guides/checkpointing)
-- [Build review queue UI](/docs/guides/web-integration)
-- [Add notification webhooks](/docs/guides/webhooks)
+- [Simple graph tutorial](/docs/guides/simple-graph)
+- [Architecture overview](/docs/architecture/overview)

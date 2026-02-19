@@ -66,81 +66,43 @@ import SiteLayout from '../layouts/SiteLayout.astro';
         </p>
       </section>
 
-      <!-- Memory Benchmark -->
+      <!-- Connector Payload Benchmarks -->
       <section class="rounded-2xl border border-neutral-800 bg-neutral-900 p-8">
-        <h2 class="text-2xl font-bold text-white">Memory Usage</h2>
+        <h2 class="text-2xl font-bold text-white">Connector Payload Microbenchmarks</h2>
         <p class="mt-2 text-neutral-400">
-          Baseline memory consumption for a simple ReAct agent
+          Local payload construction snapshots for Qdrant and Weaviate connectors
         </p>
 
         <div class="mt-6 overflow-hidden rounded-lg border border-neutral-800">
           <table class="w-full text-left">
             <thead class="bg-neutral-950">
               <tr>
-                <th class="px-6 py-4 text-sm font-semibold text-white">Framework</th>
-                <th class="px-6 py-4 text-sm font-semibold text-white">Memory (MB)</th>
-                <th class="px-6 py-4 text-sm font-semibold text-rust-500">vs Wesichain</th>
+                <th class="px-6 py-4 text-sm font-semibold text-white">Benchmark</th>
+                <th class="px-6 py-4 text-sm font-semibold text-white">Wesichain mean</th>
+                <th class="px-6 py-4 text-sm font-semibold text-white">Baseline mean</th>
+                <th class="px-6 py-4 text-sm font-semibold text-rust-500">Delta</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-neutral-800">
               <tr class="bg-rust-600/5">
-                <td class="px-6 py-4 font-medium text-white">Wesichain</td>
-                <td class="px-6 py-4 text-white">~15 MB</td>
-                <td class="px-6 py-4 text-rust-500">baseline</td>
+                <td class="px-6 py-4 text-white">Qdrant payload construction</td>
+                <td class="px-6 py-4 text-white font-mono">0.801 ms</td>
+                <td class="px-6 py-4 text-neutral-300 font-mono">0.998 ms</td>
+                <td class="px-6 py-4 text-rust-500 font-medium">1.25x faster</td>
               </tr>
               <tr>
-                <td class="px-6 py-4 text-neutral-300">LangChain (Python)</td>
-                <td class="px-6 py-4 text-neutral-400">~180 MB</td>
-                <td class="px-6 py-4 text-neutral-400">~12x more</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 text-neutral-300">LlamaIndex</td>
-                <td class="px-6 py-4 text-neutral-400">~250 MB</td>
-                <td class="px-6 py-4 text-neutral-400">~17x more</td>
+                <td class="px-6 py-4 text-neutral-300">Weaviate payload construction</td>
+                <td class="px-6 py-4 text-white font-mono">1.099 ms</td>
+                <td class="px-6 py-4 text-neutral-300 font-mono">1.450 ms</td>
+                <td class="px-6 py-4 text-rust-500 font-medium">1.32x faster</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <p class="mt-4 text-sm text-neutral-500">
-          Methodology: Measured RSS after agent initialization, before any LLM calls.
-          Zero GC pauses in Rust vs Python's garbage collection overhead.
-        </p>
-      </section>
-
-      <!-- Cold Start -->
-      <section class="rounded-2xl border border-neutral-800 bg-neutral-900 p-8">
-        <h2 class="text-2xl font-bold text-white">Cold Start Time</h2>
-        <p class="mt-2 text-neutral-400">
-          Time from process start to first LLM request ready
-        </p>
-
-        <div class="mt-6 space-y-4">
-          <div class="flex items-center gap-4">
-            <span class="w-32 text-sm text-neutral-400">Wesichain</span>
-            <div class="flex-1">
-              <div class="h-4 rounded-full bg-rust-600" style="width: 8%"></div>
-            </div>
-            <span class="w-24 text-right text-sm font-medium text-white">~50ms</span>
-          </div>
-          <div class="flex items-center gap-4">
-            <span class="w-32 text-sm text-neutral-400">LangChain</span>
-            <div class="flex-1">
-              <div class="h-4 rounded-full bg-neutral-700" style="width: 50%"></div>
-            </div>
-            <span class="w-24 text-right text-sm text-neutral-400">~800ms</span>
-          </div>
-          <div class="flex items-center gap-4">
-            <span class="w-32 text-sm text-neutral-400">LlamaIndex</span>
-            <div class="flex-1">
-              <div class="h-4 rounded-full bg-neutral-700" style="width: 100%"></div>
-            </div>
-            <span class="w-24 text-right text-sm text-neutral-400">~1.5s</span>
-          </div>
-        </div>
-
-        <p class="mt-4 text-sm text-neutral-500">
-          Native binaries with no interpreter startup overhead. Critical for serverless deployments.
+          Caveat: these snapshots are single local runs on synthetic datasets and benchmark local payload
+          construction only (no live network call timing).
         </p>
       </section>
 
@@ -161,9 +123,9 @@ import SiteLayout from '../layouts/SiteLayout.astro';
             <h4 class="text-sm font-medium text-neutral-300">Environment</h4>
             <ul class="mt-2 space-y-1 text-sm text-neutral-400">
               <li>• Platform: macOS (Darwin)</li>
-              <li>• Rust version: 1.75+</li>
-              <li>• Optimization: --release</li>
-              <li>• CPU: Apple Silicon M-series</li>
+               <li>• Rust version: 1.92.0 in latest connector snapshots</li>
+               <li>• Optimization: --release</li>
+               <li>• CPU: Apple Silicon M-series</li>
             </ul>
           </div>
         </div>
@@ -177,7 +139,9 @@ import SiteLayout from '../layouts/SiteLayout.astro';
         </p>
         <pre class="mt-4 overflow-x-auto rounded-lg bg-neutral-900 p-4 text-sm"><code>git clone https://github.com/wesichain/wesichain.git
 cd wesichain
-cargo bench -p wesichain-retrieval --bench recursive_splitter</code></pre>
+cargo bench -p wesichain-retrieval --bench recursive_splitter
+cargo bench -p wesichain-qdrant --bench vs_langchain -- --sample-size 10
+cargo bench -p wesichain-weaviate --bench vs_langchain -- --sample-size 10</code></pre>
         <p class="mt-4 text-sm text-neutral-500">
           Results saved to <code>target/criterion/</code> for detailed analysis with confidence intervals.
         </p>

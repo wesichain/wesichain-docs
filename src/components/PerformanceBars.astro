@@ -1,102 +1,94 @@
 ---
-interface Metric {
-  name: string;
-  python: { value: string; numeric: number };
-  rust: { value: string; numeric: number };
-  unit: string;
-}
-
-const metrics: Metric[] = [
-  {
-    name: 'Memory (baseline)',
-    python: { value: '320 MB', numeric: 320 },
-    rust: { value: '15 MB', numeric: 15 },
-    unit: 'MB'
-  },
-  {
-    name: 'Cold start time',
-    python: { value: '3.2s', numeric: 3200 },
-    rust: { value: '120ms', numeric: 120 },
-    unit: 'ms'
-  },
-  {
-    name: 'Request latency (p99)',
-    python: { value: '450ms', numeric: 450 },
-    rust: { value: '45ms', numeric: 45 },
-    unit: 'ms'
-  }
+const splitterRows = [
+  { size: '16 KB', throughput: 221, time: '70.8 us' },
+  { size: '128 KB', throughput: 218, time: '572 us' },
+  { size: '1 MB', throughput: 201, time: '4.97 ms' },
 ];
 
-function calculateImprovement(py: number, rs: number): string {
-  const ratio = py / rs;
-  if (ratio >= 10) return `${ratio.toFixed(0)}x faster`;
-  if (ratio >= 2) return `${ratio.toFixed(1)}x faster`;
-  return `${(ratio * 100).toFixed(0)}% of`;
-}
+const peakThroughput = 221;
+
+const connectorRows = [
+  {
+    name: 'Qdrant payload construction',
+    wesichain: '0.801 ms',
+    baseline: '0.998 ms',
+    delta: '1.25x faster',
+  },
+  {
+    name: 'Weaviate payload construction',
+    wesichain: '1.099 ms',
+    baseline: '1.450 ms',
+    delta: '1.32x faster',
+  },
+];
 ---
 
 <section class="py-24">
   <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
       <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-        Performance that speaks for itself
+        Benchmark artifacts, not guesswork
       </h2>
       <p class="mt-4 text-neutral-400">
-        Real benchmarks comparing Wesichain to Python LangChain
+        Numbers below are pulled from versioned benchmark snapshots in the Wesichain repository.
       </p>
     </div>
 
     <div class="space-y-8">
-      {metrics.map((metric) => {
-        const maxValue = Math.max(metric.python.numeric, metric.rust.numeric);
-        const pythonWidth = (metric.python.numeric / maxValue) * 100;
-        const rustWidth = (metric.rust.numeric / maxValue) * 100;
-        const improvement = calculateImprovement(metric.python.numeric, metric.rust.numeric);
+      <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold text-white">Recursive splitter throughput</h3>
+          <span class="text-sm text-rust-500 font-medium">2-4x vs typical Python splitters</span>
+        </div>
 
-        return (
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-white">{metric.name}</h3>
-              <span class="text-sm text-green-400 font-medium">{improvement}</span>
-            </div>
+        <div class="space-y-4">
+          {splitterRows.map((row) => {
+            const width = (row.throughput / peakThroughput) * 100;
+            return (
+              <div>
+                <div class="mb-2 flex items-center justify-between text-sm">
+                  <span class="text-neutral-300">{row.size}</span>
+                  <span class="text-white font-mono">{row.throughput} MiB/s ({row.time})</span>
+                </div>
+                <div class="h-3 rounded-full bg-neutral-800 overflow-hidden">
+                  <div class="h-full rounded-full bg-rust-600" style={`width: ${width}%`} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-            {/* Python bar */}
-            <div class="mb-4">
-              <div class="flex items-center justify-between text-sm mb-2">
-                <span class="text-neutral-400">Python (LangChain)</span>
-                <span class="text-neutral-300 font-mono">{metric.python.value}</span>
-              </div>
-              <div class="h-3 bg-neutral-800 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-neutral-600 rounded-full transition-all duration-1000"
-                  style={`width: ${pythonWidth}%`}
-                />
-              </div>
-            </div>
-
-            {/* Rust bar */}
-            <div>
-              <div class="flex items-center justify-between text-sm mb-2">
-                <span class="text-rust-500 font-medium">Wesichain (Rust)</span>
-                <span class="text-white font-mono">{metric.rust.value}</span>
-              </div>
-              <div class="h-3 bg-neutral-800 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-rust-600 rounded-full transition-all duration-1000"
-                  style={`width: ${rustWidth}%`}
-                />
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+        <h3 class="text-lg font-semibold text-white mb-4">Connector payload microbenchmarks</h3>
+        <div class="overflow-hidden rounded-lg border border-neutral-800">
+          <table class="w-full text-left">
+            <thead class="bg-neutral-950">
+              <tr>
+                <th class="px-4 py-3 text-sm font-semibold text-white">Benchmark</th>
+                <th class="px-4 py-3 text-sm font-semibold text-white">Wesichain</th>
+                <th class="px-4 py-3 text-sm font-semibold text-white">Baseline shape</th>
+                <th class="px-4 py-3 text-sm font-semibold text-rust-500">Delta</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-800">
+              {connectorRows.map((row) => (
+                <tr>
+                  <td class="px-4 py-3 text-neutral-300">{row.name}</td>
+                  <td class="px-4 py-3 text-white font-mono">{row.wesichain}</td>
+                  <td class="px-4 py-3 text-neutral-400 font-mono">{row.baseline}</td>
+                  <td class="px-4 py-3 text-rust-500 font-medium">{row.delta}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    {/* Reproducibility note */}
     <div class="mt-8 text-center">
       <p class="text-sm text-neutral-500">
-        All benchmarks are reproducible.{' '}
-        <a href="/benchmarks" class="text-rust-400 hover:underline">See methodology →</a>
+        See full caveats and commands on <a href="/benchmarks" class="text-rust-400 hover:underline">/benchmarks</a>.
       </p>
     </div>
   </div>

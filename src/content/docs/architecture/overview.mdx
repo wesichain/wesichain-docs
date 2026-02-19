@@ -1,233 +1,61 @@
 ---
 title: Architecture Overview
-description: Understanding Wesichain's design and crate organization
+description: How Wesichain's modular crates fit together
 group: Architecture
 order: 1
 ---
 
 # Architecture Overview
 
-Wesichain is a Rust-native framework for building production-grade LLM agents and RAG pipelines. This document explains the high-level architecture and design decisions.
+Wesichain is a Rust-native framework for LLM applications with a modular workspace layout.
 
-## Design Philosophy
+## Design Principles
 
-**Performance First**: Rust provides zero-cost abstractions, predictable memory usage, and no garbage collection pauses. Wesichain is designed for high-throughput, low-latency production workloads.
+- **Modular-by-default**: choose only the crates you need.
+- **Type-safe state**: graph state is explicit via `StateSchema`.
+- **Async + streaming first**: built for production runtimes.
+- **Composable orchestration**: combine chains, tools, and stateful graphs.
 
-**Composable**: The `Runnable` trait enables chaining components via `.then()` for flexible pipeline construction.
+## Layers
 
-**Familiar**: API patterns are inspired by Python LangChain/LangGraph to minimize migration friction.
+### Foundation
 
-## Workspace Organization
+- `wesichain-core`: base traits (`Runnable`, `Tool`, state contracts, errors)
+- `wesichain-prompt`: prompt template utilities
+- `wesichain-llm`: provider abstraction layer
 
-Wesichain is organized as a Cargo workspace of focused crates:
+### Orchestration
 
-```
-wesichain/
-├── wesichain/                  # Umbrella crate (prelude)
-├── wesichain-core/             # Core traits (Runnable, Tool, etc.)
-├── wesichain-prompt/           # Prompt templates
-├── wesichain-llm/              # Provider-agnostic LLM trait
-├── wesichain-agent/            # ReAct agent implementation
-├── wesichain-graph/            # Stateful graph execution
-├── wesichain-retrieval/        # Text splitting, document loading
-├── wesichain-rag/              # High-level RAG pipelines
-├── wesichain-embeddings/       # Embedding models
-├── wesichain-checkpoint-sqlite/    # SQLite persistence
-├── wesichain-checkpoint-postgres/  # PostgreSQL persistence
-├── wesichain-langsmith/        # Observability integration
-└── wesichain-pinecone/         # Pinecone vector store
-```
+- `wesichain-graph`: graph runtime, conditional routing, interrupts, checkpoint-aware execution
+- `wesichain-agent`: FSM-oriented runtime track for v0.3 evented agents
+- `wesichain-memory`: memory primitives (buffer/window/summary)
 
-## Core Abstractions
+### Retrieval + RAG
 
-### Runnable
+- `wesichain-retrieval`, `wesichain-embeddings`, `wesichain-rag`
+- vector-store integrations: `wesichain-chroma`, `wesichain-pinecone`, `wesichain-qdrant`, `wesichain-weaviate`
 
-The foundation of Wesichain is the `Runnable<Input, Output>` trait:
+### Persistence + Observability
 
-```rust
-#[async_trait]
-pub trait Runnable<I, O> {
-    async fn invoke(&self, input: I) -> Result<O, WesichainError>;
+- checkpoints: `wesichain-checkpoint-sql`, `wesichain-checkpoint-sqlite`, `wesichain-checkpoint-postgres`, `wesichain-checkpoint-redis`
+- observability: `wesichain-langsmith`
 
-    fn stream(&self, input: I) -> BoxStream<Result<StreamEvent, WesichainError>>;
+## Recommended Starting Point
 
-    async fn batch(&self, inputs: Vec<I>) -> Result<Vec<O>, WesichainError>;
-}
-```
+For most projects:
 
-Any component implementing `Runnable` can be:
-- **Invoked** synchronously (async)
-- **Streamed** for real-time output
-- **Batched** for throughput
-- **Chained** with `.then()`
+1. Start with `wesichain-core`, `wesichain-llm`, `wesichain-graph`.
+2. Use `ReActGraphBuilder` for tool-using ReAct flows.
+3. Add checkpoint backend and retrieval crates only when needed.
 
-### Composition with `.then()`
+## Runtime Notes
 
-```rust
-let chain = prompt
-    .then(llm)
-    .then(parser)
-    .with_retries(3);
-```
-
-The output type of the first runnable must match the input type of the second.
-
-### Tool
-
-Tools are ReAct-compatible functions:
-
-```rust
-#[async_trait]
-pub trait Tool: Send + Sync {
-    fn name(&self) -> &str;
-    fn description(&self) -> &str;
-    fn schema(&self) -> Value;
-    async fn invoke(&self, input: Value) -> Result<Value, ToolError>;
-}
-```
-
-Tools are registered with agents and automatically made available to the LLM via tool calling.
-
-### Checkpointer
-
-Persistence for resumable workflows:
-
-```rust
-#[async_trait]
-pub trait Checkpointer: Send + Sync {
-    async fn save(&self, thread_id: &str, checkpoint: Checkpoint) -> Result<(), CheckpointError>;
-    async fn load(&self, thread_id: &str) -> Result<Option<Checkpoint>, CheckpointError>;
-}
-```
-
-Implementations available:
-- `InMemoryCheckpointer` — development/testing
-- `SqliteCheckpointer` — local/embedded
-- `PostgresCheckpointer` — production/distributed
-
-## ReAct Agent Execution
-
-The ReAct agent follows the Reasoning + Acting loop:
-
-```
-1. Load memory + checkpoint
-2. Render system prompt + history + tool schemas
-3. Call LLM
-4. Parse output:
-   - Final answer → Return result
-   - Tool calls → Execute tools, observe results, save checkpoint, loop
-5. Exit on final answer or max_iterations
-```
-
-### Parser Modes
-
-- **Classic ReAct**: Text-based Thought/Action/Action Input format
-- **Structured JSON**: OpenAI/Mistral-compatible tool calling
-
-### Streaming
-
-A single stream emits all execution events:
-
-```rust
-pub enum StreamEvent {
-    Token(String),
-    ToolCall { id: String, name: String, args: Value },
-    ToolResult { id: String, output: Value },
-    Trace(String),
-    Final(String),
-}
-```
-
-## Graph Execution
-
-For complex workflows, `wesichain-graph` provides stateful graph execution:
-
-```rust
-let graph = GraphBuilder::new()
-    .add_node("retriever", retriever)
-    .add_node("generator", generator)
-    .add_edge("retriever", "generator")  // Sequential
-    .add_conditional_edge("agent", |state| {
-        if state.has_tool_calls() { "tools" } else { "final" }
-    })
-    .set_entry("retriever")
-    .build()?;
-```
-
-Features:
-- **State management**: User-defined state schema with merge semantics
-- **Conditional routing**: Dynamic edge selection based on state
-- **Checkpointing**: Per-node persistence for resumability
-- **Parallel execution**: Independent branches run concurrently
-
-## Error Handling
-
-Explicit error types with context:
-
-```rust
-pub enum WesichainError {
-    LlmProvider { source: Box<dyn Error> },
-    ToolNotFound { name: String },
-    ToolSchemaInvalid { source: serde_json::Error },
-    ToolCallFailed { name: String, source: Box<dyn Error> },
-    ParseFailed { output: String, guidance: String },
-    CheckpointFailed { source: Box<dyn Error> },
-    Timeout { duration: Duration },
-    Cancelled,
-    MaxIterationsReached { max: usize },
-}
-```
-
-Policies control failure behavior:
-- `ParseFailurePolicy`: Retry with guidance or fail fast
-- `ToolFailurePolicy`: Fail fast or append error observation
-
-## Observability
-
-Structured tracing via the `tracing` crate:
-
-```rust
-INFO wesichain_agent: Starting agent iteration
-  thread_id: "conv-123", iteration: 1
-
-INFO wesichain_agent: Calling tool
-  tool: "calculator", args: {"expression": "2 + 2"}
-
-INFO wesichain_agent: Tool completed
-  tool: "calculator", result: "4", duration_ms: 12
-```
-
-LangSmith integration available via `wesichain-langsmith`.
-
-## Performance Characteristics
-
-| Metric | Wesichain (Rust) | Typical Python |
-|--------|-----------------|----------------|
-| Memory (baseline) | ~15 MB | ~180-250 MB |
-| Cold start | ~50ms | ~800ms-1.5s |
-| Text splitting | 221 MiB/s | ~50-100 MiB/s |
-| GC pauses | None | Present |
-
-See [Benchmarks](/benchmarks) for detailed methodology.
-
-## Migration from Python
-
-Wesichain is designed for near-painless migration from Python LangChain/LangGraph:
-
-| Python | Rust (Wesichain) |
-|--------|-----------------|
-| `chain.invoke()` | `chain.invoke().await` |
-| `chain.stream()` | `chain.stream()` (returns `StreamEvent`) |
-| `@tool` decorator | `impl Tool for MyTool` |
-| `ChatOpenAI` | `OpenAI::new()` |
-| `StateGraph` | `GraphBuilder` |
-| `checkpointer` | `.with_checkpointer()` |
-
-See the [Migration Guide](/docs/getting-started/migration) for side-by-side examples.
+- `StateSchema` now uses `type Update` + `apply(current, update)` for deterministic merge behavior.
+- `ReActAgentNode` remains available, but `ReActGraphBuilder` is the preferred path for new work.
+- The v0.3 direction emphasizes explicit runtime phases and evented orchestration (`wesichain-agent`).
 
 ## Next Steps
 
-- [Core Concepts](/docs/concepts/runnable) — Learn the `Runnable` trait in depth
-- [ReAct Agent](/docs/guides/react-agent) — Build your first agent
-- [RAG Pipeline](/docs/guides/rag-pipeline) — Document Q&A workflows
-- [Checkpointing](/docs/guides/checkpointing) — Add persistence
+- [Quick Start - ReAct Agent](/docs/getting-started/quickstart-react)
+- [Quick Start - RAG Pipeline](/docs/getting-started/quickstart-rag)
+- [Checkpointing Guide](/docs/guides/checkpointing)
