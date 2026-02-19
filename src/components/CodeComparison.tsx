@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Check, Copy } from 'lucide-react';
 import clsx from 'clsx';
+import { splitterRows, typicalPythonSplitterRangeMibPerSec } from '../data/benchmarks';
 
 interface Scenario {
   id: string;
@@ -36,7 +37,10 @@ agent = AgentExecutor(
 
 result = agent.invoke({"input": "What is 2+2?"})`,
       issues: ['Interpreter overhead', 'Runtime variability', 'GIL constraints'],
-      stats: { label: 'Splitter baseline', value: '~50-100 MiB/s' }
+      stats: {
+        label: 'Splitter baseline',
+        value: `~${typicalPythonSplitterRangeMibPerSec.low}-${typicalPythonSplitterRangeMibPerSec.high} MiB/s`
+      }
     },
     rust: {
       code: `use wesichain_graph::ReActGraphBuilder;
@@ -48,7 +52,10 @@ let graph = ReActGraphBuilder::new()
 
 let result = graph.invoke_graph(state).await?;`,
       benefits: ['Async-native runtime', 'Composable graph state', 'Reproducible benchmarks'],
-      stats: { label: 'Splitter benchmark', value: '201-221 MiB/s' }
+      stats: {
+        label: 'Splitter benchmark',
+        value: `${Math.min(...splitterRows.map((row) => row.throughputMibPerSec))}-${Math.max(...splitterRows.map((row) => row.throughputMibPerSec))} MiB/s`
+      }
     }
   },
   {
@@ -115,6 +122,15 @@ let result = graph.invoke_graph(state).await?;`,
 ];
 
 export function CodeComparison() {
+  const lowerMultiplier = Math.round(
+    Math.max(...splitterRows.map((row) => row.throughputMibPerSec)) /
+      typicalPythonSplitterRangeMibPerSec.high
+  );
+  const upperMultiplier = Math.round(
+    Math.max(...splitterRows.map((row) => row.throughputMibPerSec)) /
+      typicalPythonSplitterRangeMibPerSec.low
+  );
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [copied, setCopied] = useState(false);
 
@@ -233,7 +249,7 @@ export function CodeComparison() {
       <div className="mt-4 flex items-center justify-center gap-4 text-sm">
         <span className="text-red-400">⚠️ Python baseline</span>
         <span className="text-neutral-600">→</span>
-        <span className="text-green-400 font-medium">✅ Published splitter benchmark shows ~2-4x throughput improvement</span>
+        <span className="text-green-400 font-medium">✅ Published splitter benchmark shows ~{lowerMultiplier}-{upperMultiplier}x throughput improvement</span>
       </div>
     </div>
   );

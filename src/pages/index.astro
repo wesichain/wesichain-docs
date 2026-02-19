@@ -3,6 +3,12 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import CodeComparison from '../components/CodeComparison.astro';
 import PainPoints from '../components/PainPoints.astro';
 import PerformanceBars from '../components/PerformanceBars.astro';
+import { benchmarkSources, splitterRows, typicalPythonSplitterRangeMibPerSec } from '../data/benchmarks';
+
+const splitterPeak = Math.max(...splitterRows.map((row) => row.throughputMibPerSec));
+const splitterFloor = Math.min(...splitterRows.map((row) => row.throughputMibPerSec));
+const lowerMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibPerSec.high);
+const upperMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibPerSec.low);
 ---
 
 <SiteLayout title="Build LLM Agents in Rust" variant="landing">
@@ -17,7 +23,7 @@ import PerformanceBars from '../components/PerformanceBars.astro';
           </h1>
           <p class="mx-auto mt-6 max-w-2xl text-lg text-neutral-400">
             Rust-native agent orchestration with published, reproducible benchmarks.
-            Recursive text splitting reaches 201-221 MiB/s in current benchmark artifacts.
+            Recursive text splitting reaches {splitterFloor}-{splitterPeak} MiB/s in current benchmark artifacts.
           </p>
           <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
@@ -154,15 +160,15 @@ while let Some(chunk) = stream.next().await {
         <!-- Stats -->
         <div class="grid grid-cols-3 gap-8 mb-12">
           <div>
-            <div class="text-4xl font-bold text-rust-500">221</div>
+            <div class="text-4xl font-bold text-rust-500">{splitterPeak}</div>
             <div class="text-sm text-neutral-400 mt-1">MiB/s peak splitter throughput</div>
           </div>
           <div>
-            <div class="text-4xl font-bold text-rust-500">201</div>
+            <div class="text-4xl font-bold text-rust-500">{splitterFloor}</div>
             <div class="text-sm text-neutral-400 mt-1">MiB/s at 1 MB input</div>
           </div>
           <div>
-            <div class="text-4xl font-bold text-rust-500">2-4x</div>
+            <div class="text-4xl font-bold text-rust-500">{lowerMultiplier}-{upperMultiplier}x</div>
             <div class="text-sm text-neutral-400 mt-1">vs typical Python splitters</div>
           </div>
         </div>
@@ -186,7 +192,7 @@ while let Some(chunk) = stream.next().await {
         </div>
 
         <p class="mt-8 text-sm text-neutral-500">
-          Source: wesichain benchmark artifacts. See full methodology on /benchmarks.
+          Sources: <code>{benchmarkSources.splitterReadme}</code>, <code>{benchmarkSources.qdrantJson}</code>, <code>{benchmarkSources.weaviateJson}</code>.
         </p>
       </div>
     </section>
