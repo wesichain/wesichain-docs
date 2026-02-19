@@ -1,26 +1,11 @@
 ---
-const splitterRows = [
-  { size: '16 KB', throughput: 221, time: '70.8 us' },
-  { size: '128 KB', throughput: 218, time: '572 us' },
-  { size: '1 MB', throughput: 201, time: '4.97 ms' },
-];
+import {
+  connectorRows,
+  splitterRows,
+  typicalPythonSplitterRangeMibPerSec,
+} from '../data/benchmarks';
 
-const peakThroughput = 221;
-
-const connectorRows = [
-  {
-    name: 'Qdrant payload construction',
-    wesichain: '0.801 ms',
-    baseline: '0.998 ms',
-    delta: '1.25x faster',
-  },
-  {
-    name: 'Weaviate payload construction',
-    wesichain: '1.099 ms',
-    baseline: '1.450 ms',
-    delta: '1.32x faster',
-  },
-];
+const peakThroughput = Math.max(...splitterRows.map((row) => row.throughputMibPerSec));
 ---
 
 <section class="py-24">
@@ -38,17 +23,19 @@ const connectorRows = [
       <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-semibold text-white">Recursive splitter throughput</h3>
-          <span class="text-sm text-rust-500 font-medium">2-4x vs typical Python splitters</span>
+          <span class="text-sm text-rust-500 font-medium">
+            2-4x vs typical Python splitters ({typicalPythonSplitterRangeMibPerSec.low}-{typicalPythonSplitterRangeMibPerSec.high} MiB/s)
+          </span>
         </div>
 
         <div class="space-y-4">
           {splitterRows.map((row) => {
-            const width = (row.throughput / peakThroughput) * 100;
+            const width = (row.throughputMibPerSec / peakThroughput) * 100;
             return (
               <div>
                 <div class="mb-2 flex items-center justify-between text-sm">
                   <span class="text-neutral-300">{row.size}</span>
-                  <span class="text-white font-mono">{row.throughput} MiB/s ({row.time})</span>
+                  <span class="text-white font-mono">{row.throughputMibPerSec} MiB/s ({row.avgTime})</span>
                 </div>
                 <div class="h-3 rounded-full bg-neutral-800 overflow-hidden">
                   <div class="h-full rounded-full bg-rust-600" style={`width: ${width}%`} />
@@ -75,9 +62,9 @@ const connectorRows = [
               {connectorRows.map((row) => (
                 <tr>
                   <td class="px-4 py-3 text-neutral-300">{row.name}</td>
-                  <td class="px-4 py-3 text-white font-mono">{row.wesichain}</td>
-                  <td class="px-4 py-3 text-neutral-400 font-mono">{row.baseline}</td>
-                  <td class="px-4 py-3 text-rust-500 font-medium">{row.delta}</td>
+                  <td class="px-4 py-3 text-white font-mono">{row.wesichainMs.toFixed(3)} ms</td>
+                  <td class="px-4 py-3 text-neutral-400 font-mono">{row.baselineMs.toFixed(3)} ms</td>
+                  <td class="px-4 py-3 text-rust-500 font-medium">{(row.baselineMs / row.wesichainMs).toFixed(2)}x faster</td>
                 </tr>
               ))}
             </tbody>

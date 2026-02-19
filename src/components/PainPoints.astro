@@ -1,12 +1,19 @@
 ---
+import { splitterRows, typicalPythonSplitterRangeMibPerSec } from '../data/benchmarks';
+
+const splitterPeak = Math.max(...splitterRows.map((row) => row.throughputMibPerSec));
+const splitterFloor = Math.min(...splitterRows.map((row) => row.throughputMibPerSec));
+const lowerMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibPerSec.high);
+const upperMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibPerSec.low);
+
 const painPoints = [
   {
     icon: '🐌',
     title: 'Throughput Evidence',
     subtitle: 'Python: Global Interpreter Lock',
-    description: 'Published benchmark notes list typical Python recursive splitters around 50-100 MiB/s for similar workloads.',
-    solution: 'Wesichain recursive splitter measures 201-221 MiB/s in current Criterion artifacts.',
-    stat: '2-4x',
+    description: `Published benchmark notes list typical Python recursive splitters around ${typicalPythonSplitterRangeMibPerSec.low}-${typicalPythonSplitterRangeMibPerSec.high} MiB/s for similar workloads.`,
+    solution: `Wesichain recursive splitter measures ${splitterFloor}-${splitterPeak} MiB/s in current Criterion artifacts.`,
+    stat: `${lowerMultiplier}-${upperMultiplier}x`,
     statLabel: 'splitter throughput range'
   },
   {

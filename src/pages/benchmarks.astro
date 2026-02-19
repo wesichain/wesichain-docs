@@ -1,5 +1,15 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
+import {
+  benchmarkSources,
+  connectorRows,
+  splitterRows,
+  typicalPythonSplitterRangeMibPerSec,
+} from '../data/benchmarks';
+
+const splitterPeak = Math.max(...splitterRows.map((row) => row.throughputMibPerSec));
+const lowerMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibPerSec.high);
+const upperMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibPerSec.low);
 ---
 
 <SiteLayout title="Benchmarks" description="Performance comparison of Wesichain vs Python alternatives">
@@ -30,33 +40,23 @@ import SiteLayout from '../layouts/SiteLayout.astro';
               </tr>
             </thead>
             <tbody class="divide-y divide-neutral-800">
-              <tr class="bg-rust-600/5">
-                <td class="px-6 py-4 font-medium text-white">16 KB</td>
-                <td class="px-6 py-4 text-white">70.8 µs</td>
-                <td class="px-6 py-4 font-semibold text-rust-500">221 MiB/s</td>
-                <td class="px-6 py-4 text-neutral-400">Baseline</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 text-neutral-300">128 KB</td>
-                <td class="px-6 py-4 text-neutral-400">572 µs</td>
-                <td class="px-6 py-4 font-semibold text-neutral-300">218 MiB/s</td>
-                <td class="px-6 py-4 text-neutral-400">Consistent scaling</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 text-neutral-300">1 MB</td>
-                <td class="px-6 py-4 text-neutral-400">4.97 ms</td>
-                <td class="px-6 py-4 font-semibold text-neutral-300">201 MiB/s</td>
-                <td class="px-6 py-4 text-neutral-400">Large input overhead</td>
-              </tr>
+              {splitterRows.map((row, index) => (
+                <tr class={index === 0 ? 'bg-rust-600/5' : ''}>
+                  <td class={index === 0 ? 'px-6 py-4 font-medium text-white' : 'px-6 py-4 text-neutral-300'}>{row.size}</td>
+                  <td class={index === 0 ? 'px-6 py-4 text-white' : 'px-6 py-4 text-neutral-400'}>{row.avgTime}</td>
+                  <td class={index === 0 ? 'px-6 py-4 font-semibold text-rust-500' : 'px-6 py-4 font-semibold text-neutral-300'}>{row.throughputMibPerSec} MiB/s</td>
+                  <td class="px-6 py-4 text-neutral-400">{index === 0 ? 'Baseline' : index === 1 ? 'Consistent scaling' : 'Large input overhead'}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
         <div class="mt-6 rounded-xl border border-rust-600/20 bg-rust-600/5 p-4">
-          <h3 class="font-semibold text-rust-500">vs Python: ~2-4x faster</h3>
+          <h3 class="font-semibold text-rust-500">vs Python: ~{lowerMultiplier}-{upperMultiplier}x faster</h3>
           <p class="mt-1 text-sm text-neutral-400">
-            Typical Python recursive text splitters achieve ~50-100 MiB/s. Wesichain's Rust implementation
-            delivers 221 MiB/s with zero-copy semantics and compile-time safety.
+            Typical Python recursive text splitters achieve ~{typicalPythonSplitterRangeMibPerSec.low}-{typicalPythonSplitterRangeMibPerSec.high} MiB/s.
+            Wesichain's Rust implementation peaks at {splitterPeak} MiB/s in the current artifact snapshot.
           </p>
         </div>
 
@@ -84,25 +84,21 @@ import SiteLayout from '../layouts/SiteLayout.astro';
               </tr>
             </thead>
             <tbody class="divide-y divide-neutral-800">
-              <tr class="bg-rust-600/5">
-                <td class="px-6 py-4 text-white">Qdrant payload construction</td>
-                <td class="px-6 py-4 text-white font-mono">0.801 ms</td>
-                <td class="px-6 py-4 text-neutral-300 font-mono">0.998 ms</td>
-                <td class="px-6 py-4 text-rust-500 font-medium">1.25x faster</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 text-neutral-300">Weaviate payload construction</td>
-                <td class="px-6 py-4 text-white font-mono">1.099 ms</td>
-                <td class="px-6 py-4 text-neutral-300 font-mono">1.450 ms</td>
-                <td class="px-6 py-4 text-rust-500 font-medium">1.32x faster</td>
-              </tr>
+              {connectorRows.map((row, index) => (
+                <tr class={index === 0 ? 'bg-rust-600/5' : ''}>
+                  <td class={index === 0 ? 'px-6 py-4 text-white' : 'px-6 py-4 text-neutral-300'}>{row.name}</td>
+                  <td class="px-6 py-4 text-white font-mono">{row.wesichainMs.toFixed(3)} ms</td>
+                  <td class="px-6 py-4 text-neutral-300 font-mono">{row.baselineMs.toFixed(3)} ms</td>
+                  <td class="px-6 py-4 text-rust-500 font-medium">{(row.baselineMs / row.wesichainMs).toFixed(2)}x faster</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
         <p class="mt-4 text-sm text-neutral-500">
           Caveat: these snapshots are single local runs on synthetic datasets and benchmark local payload
-          construction only (no live network call timing).
+          construction only (no live network call timing). Source files: <code>{benchmarkSources.qdrantJson}</code>, <code>{benchmarkSources.weaviateJson}</code>.
         </p>
       </section>
 
