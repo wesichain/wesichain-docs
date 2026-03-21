@@ -8,18 +8,24 @@ interface Props {
   description?: string;
   variant?: 'landing' | 'docs';
   schema?: any;
+  image?: string;
+  imageAlt?: string;
+  author?: string;
 }
 
 const {
   title,
-  description = 'Build production-grade LLM agents in Rust',
+  description = 'Build production-grade LLM agents in Rust. Learn how to construct, deploy, and scale intelligent AI systems with Wesichain.',
   variant = 'landing',
-  schema
+  schema,
+  image = '/og-image.png',
+  imageAlt = 'Wesichain Documentation Logo',
+  author = 'Wesichain'
 } = Astro.props;
 
 const fullTitle = `${title} | Wesichain`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const socialImageURL = new URL('/og-image.png', Astro.site);
+const socialImageURL = new URL(image, Astro.site);
 
 const defaultSchema = variant === 'landing' ? {
   "@context": "https://schema.org",
@@ -38,13 +44,17 @@ const finalSchema = schema || defaultSchema;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0a0a0a" />
-    <meta name="robots" content="index, follow" />
+    <meta name="author" content={author} />
+    <meta name="creator" content="Wesichain" />
+    <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
 
     <title>{fullTitle}</title>
 
@@ -54,16 +64,23 @@ const finalSchema = schema || defaultSchema;
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={socialImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
     <meta property="og:site_name" content="Wesichain" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImageURL} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    <meta name="twitter:site" content="@Wesichain" />
+    <meta name="twitter:creator" content="@Wesichain" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
     {finalSchema && (

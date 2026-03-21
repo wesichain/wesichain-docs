@@ -11,16 +11,28 @@ interface Props {
     slug: string;
     text: string;
   }>;
+  datePublished?: string;
+  dateModified?: string;
 }
 
-const { title, description, headings = [] } = Astro.props;
+const { 
+  title, 
+  description, 
+  headings = [],
+  datePublished,
+  dateModified
+} = Astro.props;
 
 const articleSchema = {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": title,
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": new URL(Astro.url.pathname, Astro.site).toString()
+  },
+  "headline": title.substring(0, 110),
   "description": description,
-  "url": new URL(Astro.url.pathname, Astro.site),
+  "url": new URL(Astro.url.pathname, Astro.site).toString(),
   "author": {
     "@type": "Organization",
     "name": "Wesichain"
@@ -31,9 +43,11 @@ const articleSchema = {
     "name": "Wesichain",
     "logo": {
       "@type": "ImageObject",
-      "url": new URL('/favicon.svg', Astro.site)
+      "url": new URL('/favicon.svg', Astro.site).toString()
     }
-  }
+  },
+  ...(datePublished && { datePublished }),
+  ...(dateModified && { dateModified })
 };
 ---
 
