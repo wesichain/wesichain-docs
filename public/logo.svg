@@ -1,7 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
-  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-        font-family="system-ui, -apple-system, sans-serif"
-        font-size="24" font-weight="bold" fill="#E74C3C">
-    wesichain
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 400" width="100%" height="100%">
+  <!-- Logo Icon part -->
+  <g transform="translate(50, 50) scale(0.6)">
+    <defs>
+      <linearGradient id="wesigrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0E172A" />
+        <stop offset="30%" stop-color="#2563EB" />
+        <stop offset="100%" stop-color="#06B6D4" />
+      </linearGradient>
+      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="6" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
+    </defs>
+    <rect width="512" height="512" rx="120" fill="url(#wesigrad)" />
+    <path d="M110 170 L170 340 L256 210 L342 340 L402 170 L360 170 L342 280 L256 150 L170 280 L152 170 Z" 
+          fill="#FFFFFF" filter="url(#glow)"/>
+    <circle cx="110" cy="170" r="22" fill="#06B6D4" />
+    <circle cx="170" cy="340" r="22" fill="#3B82F6" />
+    <circle cx="256" cy="150" r="28" fill="#FFFFFF" />
+    <circle cx="256" cy="210" r="22" fill="#06B6D4" />
+    <circle cx="342" cy="340" r="22" fill="#3B82F6" />
+    <circle cx="402" cy="170" r="22" fill="#06B6D4" />
+  </g>
+  <!-- Text part -->
+  <text x="420" y="260" font-family="system-ui, -apple-system, sans-serif" font-size="180" font-weight="bold" fill="currentColor">
+    Wesichain
   </text>
 </svg>

@@ -7,15 +7,29 @@ interface Props {
   title: string;
   description?: string;
   variant?: 'landing' | 'docs';
+  schema?: any;
 }
 
 const {
   title,
   description = 'Build production-grade LLM agents in Rust',
-  variant = 'landing'
+  variant = 'landing',
+  schema
 } = Astro.props;
 
 const fullTitle = `${title} | Wesichain`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const socialImageURL = new URL('/og-image.png', Astro.site);
+
+const defaultSchema = variant === 'landing' ? {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Wesichain",
+  "url": Astro.site?.toString() || "https://wesichain.dev",
+  "description": description
+} : null;
+
+const finalSchema = schema || defaultSchema;
 ---
 
 <!doctype html>
@@ -25,26 +39,36 @@ const fullTitle = `${title} | Wesichain`;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#0a0a0a" />
+    <meta name="robots" content="index, follow" />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="canonical" href={canonicalURL} />
+
     <title>{fullTitle}</title>
 
     <!-- OpenGraph -->
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={Astro.url} />
-    <meta property="og:image" content="https://wesichain.dev/og-image.png" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={socialImageURL} />
     <meta property="og:site_name" content="Wesichain" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content="https://wesichain.dev/og-image.png" />
+    <meta name="twitter:image" content={socialImageURL} />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    {finalSchema && (
+      <script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />
+    )}
   </head>
   <body class="min-h-screen flex flex-col">
     <Header variant={variant} />

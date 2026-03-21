@@ -14,9 +14,30 @@ interface Props {
 }
 
 const { title, description, headings = [] } = Astro.props;
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": title,
+  "description": description,
+  "url": new URL(Astro.url.pathname, Astro.site),
+  "author": {
+    "@type": "Organization",
+    "name": "Wesichain"
+  },
+  "inLanguage": "en-US",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Wesichain",
+    "logo": {
+      "@type": "ImageObject",
+      "url": new URL('/favicon.svg', Astro.site)
+    }
+  }
+};
 ---
 
-<SiteLayout title={title} description={description} variant="docs">
+<SiteLayout title={title} description={description} variant="docs" schema={articleSchema}>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="flex gap-8 py-8">
       <Sidebar />
