@@ -1,0 +1,66 @@
+---
+title: "Why Wesichain?"
+description: "When to choose Wesichain over Python LangChain or LangGraph — performance rationale and feature comparison."
+order: 0
+group: Getting Started
+lastUpdated: "2026-03-22"
+---
+
+## The Problem with Python LLM Frameworks
+
+Python dominates ML research, but production LLM applications face real constraints:
+
+- **GIL bottleneck** — CPU-bound operations (tokenization, chunking, embedding) block the event loop in single-threaded Python even with `asyncio`.
+- **Memory overhead** — A minimal LangChain agent process uses 80–150 MB before your first API call; multiple workers multiply this.
+- **Cold start latency** — Python import chains for `langchain`, `pydantic`, and provider SDKs add 1–4 seconds to serverless cold starts.
+- **Type safety gaps** — `dict`-based state in LangGraph is checked at runtime, not compile time. Refactoring agents is guesswork without running the code.
+- **Deployment complexity** — Shipping a Python LLM service requires managing venvs, pinned deps, and platform-specific wheels.
+
+Wesichain is a Rust-native reimplementation of the same concepts (Runnable, Chain, Tool, Graph, Checkpointer) designed for workloads where these constraints matter.
+
+---
+
+## Feature Comparison
+
+| Feature | Wesichain (Rust) | LangChain Python | LangGraph Python |
+|---------|-----------------|-----------------|-----------------|
+| Language | Rust | Python | Python |
+| Async model | Tokio multi-thread | asyncio (GIL-bound) | asyncio (GIL-bound) |
+| True parallelism | ✅ OS threads + async | ❌ GIL prevents CPU parallel | ❌ GIL prevents CPU parallel |
+| Type safety | ✅ Compile-time | Partial (Pydantic v2) | Partial (TypedDict) |
+| Memory per agent | ~2–5 MB | ~80–150 MB | ~80–150 MB |
+| Cold start | ~10–50 ms | ~1–4 s | ~1–4 s |
+| Streaming | ✅ Native `Stream` trait | ✅ Async generators | ✅ Async generators |
+| Checkpointing | ✅ SQLite / Postgres / Redis | ✅ SQLite / Postgres | ✅ SQLite / Postgres |
+| MCP support | ✅ stdio + HTTP/SSE | 🔶 Via third-party | 🔶 Via third-party |
+| Deployment | Single binary | venv + dependencies | venv + dependencies |
+
+---
+
+## Performance Numbers
+
+Current benchmark artifacts (reproducible):
+
+- **Recursive text splitting**: 201–221 MiB/s vs. 50–100 MiB/s typical in Python LangChain — see [`wesichain/docs/benchmarks/README.md`](https://github.com/wesichain/wesichain/blob/main/wesichain/docs/benchmarks/README.md).
+- **Vector payload construction**: 0.8 ms (Wesichain) vs. 1.0 ms (Python baseline) per payload — single local run, synthetic dataset.
+
+Full methodology and raw data are available on the [Benchmarks](/benchmarks) page.
+
+---
+
+## When Python is Still Right
+
+Wesichain is not the right choice for every team or workflow:
+
+- **ML library ecosystem** — If your agent calls PyTorch, scikit-learn, or HuggingFace Transformers directly, Python is the better host. Wesichain calls LLM APIs; it does not run local models in-process (Candle support is experimental).
+- **Faster prototyping** — Jupyter notebooks, REPL iteration, and Python's dynamic nature make early-stage research faster.
+- **Existing Python codebase** — Rewriting a working LangChain service in Rust has real cost. Wesichain makes the most sense for new services or high-traffic bottlenecks.
+- **Team expertise** — Rust has a steeper learning curve. If your team doesn't know Rust, start with Python and migrate hot paths later.
+
+---
+
+## Migration Path
+
+If you're moving from LangChain/LangGraph, see the [Migration Guide](/docs/getting-started/migration) for concept mappings.
+
+Not sure which crates you need? Try the [Crate Selector](/crate-selector).

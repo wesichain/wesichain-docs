@@ -1,0 +1,21 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import ExamplesGallery from '../components/ExamplesGallery.tsx';
+import { examples } from '../data/examples';
+---
+
+<SiteLayout
+  title="Examples | Wesichain"
+  description="Runnable Wesichain code examples. Filter by category or difficulty."
+  variant="landing"
+>
+  <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <div class="mb-12">
+      <h1 class="text-3xl font-bold text-white">Examples</h1>
+      <p class="mt-3 text-neutral-400">
+        Runnable examples from the Wesichain repository. Filter by category or difficulty.
+      </p>
+    </div>
+    <ExamplesGallery examples={examples} client:load />
+  </div>
+</SiteLayout>

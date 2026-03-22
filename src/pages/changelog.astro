@@ -1,0 +1,114 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { changelog } from '../data/changelog';
+
+function parseInlineCode(text: string): Array<string | { code: string }> {
+  const parts: Array<string | { code: string }> = [];
+  const regex = /`([^`]+)`/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push({ code: match[1] });
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
+}
+
+const SECTION_HEADING_STYLES: Record<string, string> = {
+  'New Crates (9)': 'bg-rust-600/20 text-rust-400 border border-rust-700',
+  'New APIs in Existing Crates': 'bg-blue-900/30 text-blue-400 border border-blue-800',
+  'Infrastructure': 'bg-neutral-800 text-neutral-300 border border-neutral-700',
+  'Initial Release': 'bg-neutral-800 text-neutral-300 border border-neutral-700',
+};
+
+const TAG_STYLES: Record<string, string> = {
+  major: 'bg-rust-600/20 text-rust-400 border border-rust-700',
+  minor: 'bg-blue-900/30 text-blue-400 border border-blue-800',
+  patch: 'bg-neutral-800 text-neutral-300 border border-neutral-700',
+};
+---
+
+<SiteLayout
+  title="Changelog | Wesichain"
+  description="Release history for the Wesichain Rust LLM framework."
+  variant="landing"
+>
+  <div class="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+    <div class="mb-12">
+      <h1 class="text-3xl font-bold text-white">Changelog</h1>
+      <p class="mt-3 text-neutral-400">
+        All notable changes to the Wesichain workspace. Follows
+        <a href="https://keepachangelog.com" target="_blank" rel="noopener noreferrer" class="text-rust-400 hover:text-rust-300">Keep a Changelog</a>
+        and
+        <a href="https://semver.org" target="_blank" rel="noopener noreferrer" class="text-rust-400 hover:text-rust-300">Semantic Versioning</a>.
+      </p>
+    </div>
+
+    <div class="border-l-2 border-neutral-800 ml-4 pl-8 space-y-16">
+      {changelog.map(entry => (
+        <section id={`v${entry.version}`}>
+          <div class="relative">
+            <!-- Timeline dot -->
+            <div class:list={[
+              'absolute -left-[2.75rem] top-1.5 w-4 h-4 rounded-full',
+              entry.tag === 'major' ? 'bg-rust-600' : 'bg-neutral-600'
+            ]} />
+
+            <div class="flex flex-wrap items-center gap-3 mb-6">
+              <h2 class="text-2xl font-bold text-white">v{entry.version}</h2>
+              <span class:list={[
+                'rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize',
+                TAG_STYLES[entry.tag] ?? 'bg-neutral-800 text-neutral-300 border border-neutral-700'
+              ]}>
+                {entry.tag}
+              </span>
+              <time
+                datetime={entry.date}
+                class="rounded-full border border-neutral-700 bg-neutral-800 px-2.5 py-0.5 text-xs text-neutral-400"
+              >
+                {new Date(entry.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </time>
+              <a href={`#v${entry.version}`} class="text-xs text-neutral-600 hover:text-neutral-400 transition-colors">#</a>
+            </div>
+
+            <div class="space-y-8">
+              {entry.sections.map(section => (
+                <div>
+                  <div class:list={[
+                    'inline-flex rounded-full px-3 py-1 text-xs font-semibold mb-4',
+                    SECTION_HEADING_STYLES[section.heading] ?? 'bg-neutral-800 text-neutral-300 border border-neutral-700'
+                  ]}>
+                    {section.heading}
+                  </div>
+                  <ul class="space-y-2">
+                    {section.items.map(item => {
+                      const parts = parseInlineCode(item);
+                      return (
+                        <li class="flex gap-2 text-sm text-neutral-400">
+                          <span class="text-neutral-600 mt-0.5 shrink-0">—</span>
+                          <span>
+                            {parts.map(part =>
+                              typeof part === 'string'
+                                ? part
+                                : <code class="rounded bg-neutral-800 px-1.5 py-0.5 text-xs font-mono text-neutral-200">{part.code}</code>
+                            )}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+</SiteLayout>

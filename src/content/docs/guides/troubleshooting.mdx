@@ -1,0 +1,250 @@
+---
+title: Troubleshooting
+description: Common errors and fixes when building with Wesichain.
+order: 7
+group: Guides
+lastUpdated: "2026-03-22"
+---
+
+This page covers the most common errors encountered when building with Wesichain, with explanations and fixes.
+
+---
+
+## 1. No Tokio runtime (`thread 'main' panicked`)
+
+**Error:**
+```
+thread 'main' panicked at 'there is no reactor running, must be called from the context of a Tokio 1.x runtime'
+```
+
+**Cause:** An async function was called without a Tokio runtime.
+
+**Fix:** Add `#[tokio::main]` to your `main` function and ensure the `tokio` crate has both `macros` and `rt-multi-thread` features:
+
+```toml
+# Cargo.toml
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+```
+
+```rust
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    // your code here
+    Ok(())
+}
+```
+
+---
+
+## 2. `StateSchema` not implemented
+
+**Error:**
+```
+error[E0277]: the trait bound `MyState: StateSchema` is not satisfied
+```
+
+**Fix:** Derive all required traits. `StateSchema` also requires `Serialize`, `Deserialize`, `Clone`, and `Default`:
+
+```toml
+# Cargo.toml
+serde = { version = "1", features = ["derive"] }
+```
+
+```rust
+use wesichain_graph::StateSchema;
+use serde::{Deserialize, Serialize};
+
+#[derive(StateSchema, Serialize, Deserialize, Clone, Default)]
+pub struct MyState {
+    pub messages: Vec<String>,
+}
+```
+
+---
+
+## 3. Tool not found at runtime (`ToolError::NotFound`)
+
+**Error:**
+```
+ToolError::NotFound("search_web")
+```
+
+**Cause:** The tool name in the agent's tool call doesn't match the name returned by `Tool::name()`, or the tool was never registered.
+
+**Fix:** Verify `ToolSet::register()` was called, and that `Tool::name()` returns exactly the string the LLM will use:
+
+```rust
+let mut tools = ToolSet::new();
+tools.register(SearchWebTool::new());
+
+// Tool::name() must match what the LLM dispatches
+impl Tool for SearchWebTool {
+    fn name(&self) -> &str { "search_web" }  // must match exactly
+    // ...
+}
+```
+
+---
+
+## 4. Checkpoint deserialization failure (`missing field`)
+
+**Error:**
+```
+Error deserializing checkpoint: missing field `new_field` at line 1 column 42
+```
+
+**Cause:** The state schema changed (a new required field was added) but an old checkpoint was loaded.
+
+**Fix:** Either clear the checkpoint file, add `#[serde(default)]` to the new field, or use `fork_from_checkpoint()` to branch from a compatible checkpoint:
+
+```rust
+// Option A: make new fields optional with a default
+#[derive(StateSchema, Serialize, Deserialize, Clone, Default)]
+pub struct MyState {
+    pub messages: Vec<String>,
+    #[serde(default)]
+    pub new_field: String,
+}
+
+// Option B: fork from a compatible thread
+let new_thread = graph.fork_from_checkpoint("old-thread-id", "new-thread-id").await?;
+```
+
+---
+
+## 5. Feature flag error (unresolved import)
+
+**Error:**
+```
+error[E0432]: unresolved import `wesichain_tools::BashExecTool`
+```
+
+**Cause:** Some tools in `wesichain-tools` are behind feature flags to avoid pulling in heavy dependencies by default.
+
+**Fix:** Enable the required feature in `Cargo.toml`:
+
+```toml
+wesichain-tools = { version = "0.3", features = ["exec"] }
+```
+
+Common feature flags:
+
+| Feature | Enables |
+|---------|---------|
+| `exec` | `BashExecTool` |
+| `git` | `GitDiffTool`, `GitCommitTool`, `GitLogTool` |
+| `patch` | `PatchTool` |
+
+---
+
+## 6. OpenAI 429 rate limit
+
+**Error:**
+```
+OpenAI API error: 429 Too Many Requests
+```
+
+**Fix:** Wrap your chain or LLM with `.with_retries()` and/or a `RateLimiter`:
+
+```rust
+// Automatic retries with exponential backoff
+let chain = prompt.then(llm).then(parser).with_retries(3);
+
+// Or add a rate limiter (requests per second)
+use wesichain_core::RateLimiter;
+let limited_llm = RateLimiter::new(llm, 10); // 10 req/s
+```
+
+---
+
+## 7. PathGuard sandbox violation (`PermissionDenied`)
+
+**Error:**
+```
+WesichainError::PermissionDenied: path '/etc/passwd' escapes sandbox root '/workspace'
+```
+
+**Cause:** A tool tried to access a path outside the `PathGuard` sandbox root.
+
+**Fix:** Ensure all file paths passed to tools resolve within the sandbox root. Symlink targets are also validated:
+
+```rust
+use wesichain_tools::PathGuard;
+
+// Only allow access under /workspace
+let guard = PathGuard::new("/workspace")?;
+
+// Check a path before using it
+guard.check("/workspace/src/main.rs")?;  // OK
+guard.check("/etc/passwd")?;              // Err: escapes sandbox
+```
+
+If the path is legitimately needed, expand the sandbox root when constructing `PathGuard`.
+
+---
+
+## 8. MCP transport closed (`McpError::TransportClosed`)
+
+**Error:**
+```
+McpError::TransportClosed
+```
+
+**Cause (stdio):** The MCP server process exited or crashed.
+**Cause (HTTP/SSE):** The server URL is wrong, the server is not running, or the auth token is invalid.
+
+**Fix:**
+
+```rust
+// For stdio: verify the process command is correct and the binary exists
+let client = McpClient::stdio("npx", &["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]).await?;
+
+// For HTTP: check URL and bearer token
+let client = McpClient::http(
+    "http://localhost:8080/mcp",
+    Some("Bearer your-token-here"),
+).await?;
+```
+
+Enable debug logging to see connection details: `RUST_LOG=wesichain_mcp=debug cargo run`.
+
+---
+
+## 9. Token budget exceeded (`WesichainError::TokenBudgetExceeded`)
+
+**Error:**
+```
+WesichainError::TokenBudgetExceeded { used: 95000, limit: 100000 }
+```
+
+**Cause:** The conversation or agent run consumed more tokens than the configured `TokenBudget`.
+
+**Fix:** Choose one or more of:
+
+```rust
+// Option A: raise the budget
+let budget = TokenBudget::new(200_000);
+
+// Option B: add a summarization step before the budget is hit
+// (inject a summarizer node into your graph)
+
+// Option C: use a cheaper model for early turns
+// configure the LLM to switch models based on turn count or token usage
+```
+
+---
+
+## 10. Pagefind search returns no results (dev mode)
+
+**Symptom:** The search bar on the docs site returns no results during `npm run dev`.
+
+**Cause:** Pagefind builds its search index at build time (`npm run build`). The index does not exist in dev mode.
+
+**Fix:** Run a production build first, then use preview mode:
+
+```bash
+npm run build    # generates dist/ and the Pagefind index
+npm run preview  # serves the built site with search working
+```
+
+Search will not work with `npm run dev`. This is expected behavior.

@@ -1,0 +1,199 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+---
+
+<SiteLayout
+  title="Community | Wesichain"
+  description="Join the Wesichain community, contribute, and get involved."
+  variant="landing"
+>
+  <div class="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+
+    <!-- Hero -->
+    <div class="mb-16 text-center">
+      <h1 class="text-3xl font-bold text-white sm:text-4xl">Join the Wesichain Community</h1>
+      <p class="mt-4 text-lg text-neutral-400">
+        Wesichain is open source and built in public. We welcome contributions of all kinds.
+      </p>
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-4">
+        <a
+          href="https://github.com/wesichain/wesichain"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-full bg-rust-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-rust-700 transition-colors"
+        >
+          View on GitHub
+        </a>
+        <a
+          href="https://github.com/wesichain/wesichain/discussions"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-full border border-neutral-700 bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
+        >
+          Start a Discussion
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="grid gap-6 sm:grid-cols-3 mb-16">
+      <a
+        href="https://github.com/wesichain/wesichain/issues"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group rounded-2xl border border-neutral-800 bg-neutral-900 p-6 hover:border-neutral-700 transition-colors"
+      >
+        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-rust-600/10">
+          <svg class="h-5 w-5 text-rust-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <h3 class="text-sm font-semibold text-white group-hover:text-rust-400 transition-colors">GitHub Issues</h3>
+        <p class="mt-1 text-xs text-neutral-500">Report bugs or request features</p>
+      </a>
+
+      <a
+        href="https://github.com/wesichain/wesichain/discussions"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group rounded-2xl border border-neutral-800 bg-neutral-900 p-6 hover:border-neutral-700 transition-colors"
+      >
+        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-rust-600/10">
+          <svg class="h-5 w-5 text-rust-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-sm font-semibold text-white group-hover:text-rust-400 transition-colors">GitHub Discussions</h3>
+        <p class="mt-1 text-xs text-neutral-500">Ask questions and share ideas</p>
+      </a>
+
+      <a
+        href="https://github.com/wesichain/wesichain/blob/main/wesichain/ROADMAP.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group rounded-2xl border border-neutral-800 bg-neutral-900 p-6 hover:border-neutral-700 transition-colors"
+      >
+        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-rust-600/10">
+          <svg class="h-5 w-5 text-rust-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-1.447-.894L15 9m0 8V9m0 0L9 7" />
+          </svg>
+        </div>
+        <h3 class="text-sm font-semibold text-white group-hover:text-rust-400 transition-colors">Roadmap</h3>
+        <p class="mt-1 text-xs text-neutral-500">See what's planned for v0.4+</p>
+      </a>
+    </div>
+
+    <!-- Contributing -->
+    <section id="contributing" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-6">Contributing</h2>
+
+      <div class="space-y-8">
+        <div>
+          <h3 class="text-base font-semibold text-white mb-3">Dev Setup</h3>
+          <div class="rounded-lg bg-neutral-900 border border-neutral-800 p-4">
+            <pre class="text-sm text-neutral-300 overflow-x-auto"><code>{`# Clone the repo
+git clone https://github.com/wesichain/wesichain.git
+cd wesichain/wesichain
+
+# Build all crates
+cargo build
+
+# Run all tests
+cargo test
+
+# Check formatting and lints (required before PR)
+cargo fmt --check
+cargo clippy -- -D warnings`}</code></pre>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-base font-semibold text-white mb-3">Commit Conventions</h3>
+          <p class="text-sm text-neutral-400 mb-3">
+            All commits must follow <a href="https://www.conventionalcommits.org" target="_blank" rel="noopener noreferrer" class="text-rust-400 hover:text-rust-300">Conventional Commits</a> with a scope:
+          </p>
+          <div class="rounded-lg bg-neutral-900 border border-neutral-800 p-4">
+            <pre class="text-sm text-neutral-300 overflow-x-auto"><code>{`feat(wesichain-agent): add parallel tool execution
+fix(wesichain-graph): resolve checkpoint deserialization edge case
+chore(workspace): bump tokio to 1.44`}</code></pre>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-base font-semibold text-white mb-3">PR Workflow</h3>
+          <ol class="space-y-2 text-sm text-neutral-400 list-decimal list-inside">
+            <li>Fork the repository and create a feature branch from <code class="rounded bg-neutral-800 px-1.5 py-0.5 text-xs font-mono text-neutral-200">main</code></li>
+            <li>Make your changes with tests for all new functionality</li>
+            <li>Run <code class="rounded bg-neutral-800 px-1.5 py-0.5 text-xs font-mono text-neutral-200">cargo fmt</code>, <code class="rounded bg-neutral-800 px-1.5 py-0.5 text-xs font-mono text-neutral-200">cargo clippy</code>, and <code class="rounded bg-neutral-800 px-1.5 py-0.5 text-xs font-mono text-neutral-200">cargo test</code> locally</li>
+            <li>Open a PR with a description of what changed and why</li>
+            <li>Address any review feedback</li>
+          </ol>
+        </div>
+
+        <div>
+          <h3 class="text-base font-semibold text-white mb-3">Code Quality Requirements</h3>
+          <ul class="space-y-1.5 text-sm text-neutral-400">
+            <li class="flex gap-2"><span class="text-rust-500 shrink-0">✓</span> Follow standard Rust naming conventions</li>
+            <li class="flex gap-2"><span class="text-rust-500 shrink-0">✓</span> Use <code class="rounded bg-neutral-800 px-1 py-0.5 text-xs font-mono text-neutral-200">async-trait</code> for async trait implementations</li>
+            <li class="flex gap-2"><span class="text-rust-500 shrink-0">✓</span> Tests required for all new public APIs</li>
+            <li class="flex gap-2"><span class="text-rust-500 shrink-0">✓</span> No new <code class="rounded bg-neutral-800 px-1 py-0.5 text-xs font-mono text-neutral-200">unwrap()</code> calls in library code — use <code class="rounded bg-neutral-800 px-1 py-0.5 text-xs font-mono text-neutral-200">?</code> and proper error types</li>
+            <li class="flex gap-2"><span class="text-rust-500 shrink-0">✓</span> <code class="rounded bg-neutral-800 px-1 py-0.5 text-xs font-mono text-neutral-200">cargo clippy -- -D warnings</code> must pass with zero warnings</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Code of Conduct -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4">Code of Conduct</h2>
+      <p class="text-sm text-neutral-400 mb-4">
+        We are committed to a welcoming and inclusive community. All participants are expected to follow our{' '}
+        <a
+          href="https://github.com/wesichain/wesichain/blob/main/CODE_OF_CONDUCT.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-rust-400 hover:text-rust-300"
+        >
+          Code of Conduct
+        </a>.
+        Key principles:
+      </p>
+      <ul class="space-y-1.5 text-sm text-neutral-400">
+        <li class="flex gap-2"><span class="text-neutral-600 shrink-0">—</span> Be respectful and considerate in all interactions</li>
+        <li class="flex gap-2"><span class="text-neutral-600 shrink-0">—</span> Critique ideas, not people</li>
+        <li class="flex gap-2"><span class="text-neutral-600 shrink-0">—</span> Harassment and exclusionary behavior will not be tolerated</li>
+        <li class="flex gap-2"><span class="text-neutral-600 shrink-0">—</span> Report violations via GitHub Issues or direct contact with maintainers</li>
+      </ul>
+    </section>
+
+    <!-- Roadmap teaser -->
+    <section>
+      <h2 class="text-2xl font-bold text-white mb-4">What's Next</h2>
+      <p class="text-sm text-neutral-400 mb-6">
+        v0.4 is focused on production hardening, expanded provider support, and a native Python SDK for interoperability.
+        See the full{' '}
+        <a
+          href="https://github.com/wesichain/wesichain/blob/main/wesichain/ROADMAP.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-rust-400 hover:text-rust-300"
+        >
+          ROADMAP.md
+        </a>
+        for details.
+      </p>
+      <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+        <h3 class="text-sm font-semibold text-white mb-3">v0.4 Highlights (planned)</h3>
+        <ul class="space-y-1.5 text-sm text-neutral-400">
+          <li class="flex gap-2"><span class="text-neutral-600 shrink-0">—</span> OpenTelemetry distributed tracing across agents</li>
+          <li class="flex gap-2"><span class="text-neutral-600 shrink-0">—</span> Native Python bindings via PyO3</li>
+          <li class="flex gap-2"><span class="text-neutral-600 shrink-0">—</span> Multi-agent coordination primitives</li>
+          <li class="flex gap-2"><span class="text-neutral-600 shrink-0">—</span> Expanded vector store integrations (Pinecone, Milvus)</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</SiteLayout>

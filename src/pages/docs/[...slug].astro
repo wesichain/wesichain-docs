@@ -20,6 +20,9 @@ const { Content, headings } = await doc.render();
   title={doc.data.title}
   description={doc.data.description}
   headings={headings}
+  currentSlug={doc.slug}
+  group={doc.data.group}
+  lastUpdated={doc.data.lastUpdated}
 >
   <h1>{doc.data.title}</h1>
   <Content />

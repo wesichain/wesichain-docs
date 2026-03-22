@@ -2,6 +2,7 @@
 import SiteLayout from './SiteLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
 import TableOfContents from '../components/TableOfContents.astro';
+import { getDocsFlatNav } from '../data/docs-nav';
 
 interface Props {
   title: string;
@@ -13,15 +14,35 @@ interface Props {
   }>;
   datePublished?: string;
   dateModified?: string;
+  currentSlug?: string;
+  group?: string;
+  lastUpdated?: string;
 }
 
-const { 
-  title, 
-  description, 
+const {
+  title,
+  description,
   headings = [],
   datePublished,
-  dateModified
+  dateModified,
+  currentSlug,
+  group,
+  lastUpdated,
 } = Astro.props;
+
+let prev: { href: string; title: string } | undefined;
+let next: { href: string; title: string } | undefined;
+
+if (currentSlug) {
+  const flat = await getDocsFlatNav();
+  const idx = flat.findIndex(e => e.slug === currentSlug);
+  if (idx > 0) prev = flat[idx - 1];
+  if (idx >= 0 && idx < flat.length - 1) next = flat[idx + 1];
+}
+
+const editUrl = currentSlug
+  ? `https://github.com/wesichain/wesichain/blob/main/wesichain-docs/src/content/docs/${currentSlug}.mdx`
+  : undefined;
 
 const articleSchema = {
   "@context": "https://schema.org",
@@ -57,9 +78,66 @@ const articleSchema = {
       <Sidebar />
 
       <article class="flex-1 min-w-0">
+        <!-- Breadcrumbs -->
+        {group && (
+          <nav aria-label="Breadcrumb" class="mb-6 flex items-center gap-2 text-sm text-neutral-500">
+            <a href="/docs/getting-started/installation" class="hover:text-white transition-colors">Docs</a>
+            <span aria-hidden="true">/</span>
+            <span>{group}</span>
+            <span aria-hidden="true">/</span>
+            <span class="text-neutral-300">{title}</span>
+          </nav>
+        )}
+
         <div class="prose-docs">
           <slot />
         </div>
+
+        <!-- Edit link + last updated -->
+        <div class="mt-8 flex items-center justify-between border-t border-neutral-800 pt-6">
+          {lastUpdated && (
+            <span class="text-xs text-neutral-500">
+              Last updated: <time datetime={lastUpdated}>{new Date(lastUpdated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+            </span>
+          )}
+          <span class="flex-1" />
+          {editUrl && (
+            <a
+              href={editUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              Edit this page on GitHub
+            </a>
+          )}
+        </div>
+
+        <!-- Prev / Next navigation -->
+        {(prev || next) && (
+          <nav class="mt-8 flex items-start justify-between gap-4">
+            {prev ? (
+              <a href={prev.href} class="group flex flex-col gap-1 max-w-[45%]">
+                <span class="text-xs text-neutral-500 uppercase tracking-wide">Previous</span>
+                <span class="text-sm font-medium text-neutral-300 group-hover:text-white transition-colors">
+                  ← {prev.title}
+                </span>
+              </a>
+            ) : <span />}
+            {next && (
+              <a href={next.href} class="group flex flex-col items-end gap-1 max-w-[45%] ml-auto">
+                <span class="text-xs text-neutral-500 uppercase tracking-wide">Next</span>
+                <span class="text-sm font-medium text-neutral-300 group-hover:text-white transition-colors">
+                  {next.title} →
+                </span>
+              </a>
+            )}
+          </nav>
+        )}
       </article>
 
       <TableOfContents headings={headings} />

@@ -3,8 +3,10 @@ import Search from './Search.astro';
 
 const navLinks = [
   { href: '/docs/getting-started/installation', label: 'Docs' },
-  { href: '/crate-selector', label: 'Which Crate?' },
-  { href: '/benchmarks', label: 'Benchmarks' },
+  { href: '/examples', label: 'Examples' },
+  { href: '/crate-selector', label: 'Which Crate?', hideMd: true },
+  { href: '/benchmarks', label: 'Benchmarks', hideMd: true },
+  { href: '/changelog', label: 'Changelog' },
   { href: 'https://github.com/wesichain/wesichain', label: 'GitHub', external: true },
 ];
 
@@ -35,7 +37,10 @@ const { variant = 'landing' } = Astro.props;
           href={link.href}
           target={link.external ? '_blank' : undefined}
           rel={link.external ? 'noopener noreferrer' : undefined}
-          class="text-sm text-neutral-400 hover:text-white transition-colors"
+          class:list={[
+            'text-sm text-neutral-400 hover:text-white transition-colors',
+            link.hideMd ? 'hidden lg:block' : ''
+          ]}
         >
           {link.label}
         </a>
@@ -53,6 +58,62 @@ const { variant = 'landing' } = Astro.props;
       >
         Get Started
       </a>
+
+      <!-- Mobile menu toggle -->
+      <button
+        id="mobile-menu-toggle"
+        class="md:hidden p-2 text-neutral-400 hover:text-white transition-colors"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg id="menu-icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+        <svg id="menu-icon-close" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
     </div>
   </div>
+
+  <!-- Mobile menu -->
+  <nav
+    id="mobile-menu"
+    class="hidden md:hidden border-t border-neutral-800 bg-neutral-950 px-4 py-4"
+    aria-label="Mobile navigation"
+  >
+    <ul class="space-y-1">
+      {navLinks.map(link => (
+        <li>
+          <a
+            href={link.href}
+            target={link.external ? '_blank' : undefined}
+            rel={link.external ? 'noopener noreferrer' : undefined}
+            class="block rounded-md px-3 py-2.5 text-sm text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors"
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
 </header>
+
+<script>
+  const btn = document.getElementById('mobile-menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  const iconOpen = document.getElementById('menu-icon-open');
+  const iconClose = document.getElementById('menu-icon-close');
+
+  btn?.addEventListener('click', () => {
+    const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!isExpanded));
+    menu?.classList.toggle('hidden');
+    iconOpen?.classList.toggle('hidden');
+    iconClose?.classList.toggle('hidden');
+  });
+</script>
