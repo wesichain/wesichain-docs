@@ -27,8 +27,10 @@ const steps: Record<string, Step> = {
     description: 'Choose your primary project goal',
     options: [
       { label: 'ReAct agent with tools', next: 'agent-runtime' },
+      { label: 'Build a coding / autonomous agent', next: 'coding-agent' },
       { label: 'RAG application', next: 'rag-store' },
       { label: 'Custom graph workflow', next: 'graph-persistence' },
+      { label: 'Add observability/tracing to an existing agent', next: 'observability' },
       { label: 'Migrating from Python', next: 'migration-path' },
     ],
   },
@@ -48,6 +50,14 @@ const steps: Record<string, Step> = {
       { label: 'Yes, local SQLite', result: 'graph-react-sqlite' },
       { label: 'Yes, PostgreSQL', result: 'graph-react-postgres' },
       { label: 'Yes, Redis', result: 'graph-react-redis' },
+    ],
+  },
+  'coding-agent': {
+    id: 'coding-agent',
+    question: 'Which LLM provider?',
+    options: [
+      { label: 'OpenAI / Ollama / Groq', result: 'coding-agent-openai' },
+      { label: 'Anthropic Claude', result: 'coding-agent-anthropic' },
     ],
   },
   'graph-persistence': {
@@ -77,6 +87,24 @@ const steps: Record<string, Step> = {
       { label: 'Qdrant', result: 'wesichain-qdrant' },
       { label: 'Weaviate', result: 'wesichain-weaviate' },
       { label: 'Chroma', result: 'wesichain-chroma' },
+      { label: 'Expose RAG as an HTTP/SSE API', next: 'server' },
+    ],
+  },
+  'server': {
+    id: 'server',
+    question: 'What else do you need?',
+    options: [
+      { label: 'Just the server', result: 'wesichain-server' },
+      { label: 'Server + MCP tools', result: 'coding-agent-openai' },
+    ],
+  },
+  'observability': {
+    id: 'observability',
+    question: 'Which observability backend?',
+    options: [
+      { label: 'LangSmith', result: 'wesichain-langsmith' },
+      { label: 'Langfuse', result: 'wesichain-langfuse' },
+      { label: 'OpenTelemetry', result: 'wesichain-otel' },
     ],
   },
   'migration-path': {
@@ -94,7 +122,7 @@ const crateResults: Record<string, CrateResult> = {
     crate: 'wesichain-core + wesichain-llm + wesichain-graph',
     description:
       'Recommended default for new ReAct and orchestration projects. Uses the graph runtime and composable ReAct subgraph builder.',
-    install: `cargo add wesichain-core@0.2.1\ncargo add wesichain-llm@0.2.1\ncargo add wesichain-graph@0.2.1`,
+    install: `cargo add wesichain-core@0.3.0\ncargo add wesichain-llm@0.3.0\ncargo add wesichain-graph@0.3.0`,
     example: `use wesichain_graph::ReActGraphBuilder;\n\nlet graph = ReActGraphBuilder::new()\n    .llm(llm)\n    .tools(tools)\n    .build::<AppState>()?;`,
   },
   'graph-react-sqlite': {
@@ -102,58 +130,74 @@ const crateResults: Record<string, CrateResult> = {
     description:
       'Best for single-node deployments, local apps, and embedded persistence.',
     install:
-      'cargo add wesichain-graph@0.2.1\ncargo add wesichain-checkpoint-sqlite@0.2.1',
+      'cargo add wesichain-graph@0.3.0\ncargo add wesichain-checkpoint-sqlite@0.3.0',
     example: `let graph = GraphBuilder::new()\n    .add_node("agent", agent_node)\n    .set_entry("agent")\n    .with_checkpointer(sqlite_checkpointer, "thread-1")\n    .build();`,
   },
   'graph-react-postgres': {
     crate: 'wesichain-graph + wesichain-checkpoint-postgres',
     description: 'Production-oriented persistence with Postgres-backed checkpoints.',
     install:
-      'cargo add wesichain-graph@0.2.1\ncargo add wesichain-checkpoint-postgres@0.2.1',
+      'cargo add wesichain-graph@0.3.0\ncargo add wesichain-checkpoint-postgres@0.3.0',
     example: `let checkpointer = PostgresCheckpointer::builder(database_url)\n    .max_connections(20)\n    .build()\n    .await?;`,
   },
   'graph-react-redis': {
     crate: 'wesichain-graph + wesichain-checkpoint-redis',
     description: 'Low-latency checkpoint storage for high-throughput session workflows.',
-    install: 'cargo add wesichain-graph@0.2.1\ncargo add wesichain-checkpoint-redis@0.2.1',
+    install: 'cargo add wesichain-graph@0.3.0\ncargo add wesichain-checkpoint-redis@0.3.0',
     example: `let graph = GraphBuilder::new()\n    .with_checkpointer(redis_checkpointer, "session-42")\n    .build();`,
   },
   'wesichain-agent': {
     crate: 'wesichain-agent',
     description:
       'FSM/event runtime track for v0.3. Ideal if you are building around explicit runtime phases and event streams.',
-    install: 'cargo add wesichain-agent@0.2.1',
+    install: 'cargo add wesichain-agent@0.3.0',
     example: `use wesichain_agent::{AgentRuntime, AgentState};\n\n// Build policies, adapters, and tooling around AgentRuntime`,
+  },
+  'coding-agent-openai': {
+    crate: 'wesichain-tools + wesichain-agent + wesichain-session + wesichain-mcp',
+    description:
+      'Full coding agent stack with filesystem tools, bash exec, git, MCP protocol, and session/cost tracking.',
+    install:
+      'cargo add wesichain-tools@0.3.0 --features fs,exec,git\ncargo add wesichain-agent@0.3.0\ncargo add wesichain-session@0.3.0\ncargo add wesichain-mcp@0.3.0',
+    example: `use wesichain_tools::{PathGuard, ToolRegistry};\nuse wesichain_tools::fs::{ReadFileTool, WriteFileTool};\nuse wesichain_tools::exec::BashExecTool;\n\nlet guard = PathGuard::new("/workspace");\nlet registry = ToolRegistry::new()\n    .register(ReadFileTool::new(guard.clone()))\n    .register(WriteFileTool::new(guard.clone()))\n    .register(BashExecTool::new(guard));\n\nlet agent = AgentRuntime::builder()\n    .tools(registry.tool_specs())\n    .build()?;`,
+  },
+  'coding-agent-anthropic': {
+    crate: 'wesichain-anthropic + wesichain-tools + wesichain-agent + wesichain-session',
+    description:
+      'Coding agent powered by Anthropic Claude with extended thinking, streaming, and tool use.',
+    install:
+      'cargo add wesichain-anthropic@0.3.0\ncargo add wesichain-tools@0.3.0 --features fs,exec,git\ncargo add wesichain-agent@0.3.0\ncargo add wesichain-session@0.3.0',
+    example: `use wesichain_anthropic::AnthropicLlm;\nuse wesichain_core::LlmRequest;\n\nlet llm = AnthropicLlm::from_env()?; // reads ANTHROPIC_API_KEY\nlet req = LlmRequest::user("Refactor this function for clarity.")\n    .with_extended_thinking(true);\nlet response = llm.complete(req).await?;`,
   },
   'wesichain-graph': {
     crate: 'wesichain-graph',
     description:
       'State graph runtime with conditional edges, concurrency, interrupts, and observer hooks.',
-    install: 'cargo add wesichain-graph@0.2.1',
+    install: 'cargo add wesichain-graph@0.3.0',
     example: `let graph = GraphBuilder::new()\n    .add_node("a", node_a)\n    .add_node("b", node_b)\n    .add_edge("a", "b")\n    .set_entry("a")\n    .build();`,
   },
   'wesichain-checkpoint-sqlite': {
     crate: 'wesichain-checkpoint-sqlite',
     description: 'SQLite checkpoint backend for resumable workflows.',
-    install: 'cargo add wesichain-checkpoint-sqlite@0.2.1',
+    install: 'cargo add wesichain-checkpoint-sqlite@0.3.0',
     example: `let checkpointer = SqliteCheckpointer::builder("sqlite://./app.db")\n    .max_connections(5)\n    .build()\n    .await?;`,
   },
   'wesichain-checkpoint-postgres': {
     crate: 'wesichain-checkpoint-postgres',
     description: 'Postgres checkpoint backend for distributed systems.',
-    install: 'cargo add wesichain-checkpoint-postgres@0.2.1',
+    install: 'cargo add wesichain-checkpoint-postgres@0.3.0',
     example: `let checkpointer = PostgresCheckpointer::builder(database_url)\n    .build()\n    .await?;`,
   },
   'wesichain-checkpoint-redis': {
     crate: 'wesichain-checkpoint-redis',
     description: 'Redis checkpoint backend for low-latency persistence.',
-    install: 'cargo add wesichain-checkpoint-redis@0.2.1',
+    install: 'cargo add wesichain-checkpoint-redis@0.3.0',
     example: `let checkpointer = RedisCheckpointer::builder(redis_url)\n    .build()\n    .await?;`,
   },
   'wesichain-checkpoint-sql': {
     crate: 'wesichain-checkpoint-sql',
     description: 'Shared SQL checkpoint operations for custom SQL backends.',
-    install: 'cargo add wesichain-checkpoint-sql@0.2.1',
+    install: 'cargo add wesichain-checkpoint-sql@0.3.0',
     example: 'Use this crate when implementing your own SQL storage backend.',
   },
   'wesichain-rag': {
@@ -161,38 +205,73 @@ const crateResults: Record<string, CrateResult> = {
     description:
       'High-level RAG API on top of core graph/retrieval building blocks. Great starting point for document QA.',
     install:
-      'cargo add wesichain-rag@0.2.1\ncargo add wesichain-checkpoint-sqlite@0.2.1',
+      'cargo add wesichain-rag@0.3.0\ncargo add wesichain-checkpoint-sqlite@0.3.0',
     example: `let rag = WesichainRag::builder()\n    .with_checkpointer(checkpointer)\n    .build()?;`,
   },
   'wesichain-pinecone': {
     crate: 'wesichain-pinecone',
     description: 'Pinecone vector store integration for production RAG systems.',
-    install: 'cargo add wesichain-pinecone@0.2.1',
+    install: 'cargo add wesichain-pinecone@0.3.0',
     example: 'Use with wesichain-rag or custom retrieval flows.',
   },
   'wesichain-qdrant': {
     crate: 'wesichain-qdrant',
     description: 'Qdrant vector store integration with metadata filter support.',
-    install: 'cargo add wesichain-qdrant@0.2.1',
+    install: 'cargo add wesichain-qdrant@0.3.0',
     example: 'Use with wesichain-retrieval and wesichain-rag.',
   },
   'wesichain-weaviate': {
     crate: 'wesichain-weaviate',
     description: 'Weaviate vector store integration with GraphQL filter translation.',
-    install: 'cargo add wesichain-weaviate@0.2.1',
+    install: 'cargo add wesichain-weaviate@0.3.0',
     example: 'Use with wesichain-retrieval and wesichain-rag.',
   },
   'wesichain-chroma': {
     crate: 'wesichain-chroma',
     description: 'Chroma integration for local and prototyping retrieval setups.',
-    install: 'cargo add wesichain-chroma@0.2.1',
+    install: 'cargo add wesichain-chroma@0.3.0',
     example: 'Use with wesichain-retrieval and wesichain-rag.',
+  },
+  'wesichain-server': {
+    crate: 'wesichain-server',
+    description:
+      'Axum HTTP server for exposing agents and chains as REST/SSE endpoints with Bearer auth.',
+    install: 'cargo add wesichain-server@0.3.0',
+    example: `use wesichain_server::{AgentRouter, ServerConfig};\n\nlet config = ServerConfig::from_env()?;\nAgentRouter::new(config)\n    .mount(my_agent)\n    .run()\n    .await?;`,
+  },
+  'wesichain-langsmith': {
+    crate: 'wesichain-langsmith',
+    description:
+      'LangSmith observability with batching, sampling, and PII redaction for production agent tracing.',
+    install: 'cargo add wesichain-langsmith@0.3.0',
+    example: `use wesichain_langsmith::LangSmithHandler;\n\nlet handler = LangSmithHandler::from_env()?; // reads LANGCHAIN_API_KEY\nagent.with_callback(handler);`,
+  },
+  'wesichain-langfuse': {
+    crate: 'wesichain-langfuse',
+    description:
+      'Langfuse observability: trace LLM calls, chains, and agent runs with batching and PII redaction.',
+    install: 'cargo add wesichain-langfuse@0.3.0',
+    example: `use wesichain_langfuse::LangfuseHandler;\n\nlet handler = LangfuseHandler::from_env()?; // reads LANGFUSE_PUBLIC_KEY + LANGFUSE_SECRET_KEY\nagent.with_callback(handler);`,
+  },
+  'wesichain-otel': {
+    crate: 'wesichain-otel',
+    description:
+      'OpenTelemetry tracing with correct span parenting, W3C traceparent, and OTLP export.',
+    install: 'cargo add wesichain-otel@0.3.0',
+    example: `use wesichain_otel::OtelHandler;\n\nlet handler = OtelHandler::new("my-agent"); // exports via OTLP\nagent.with_callback(handler);`,
+  },
+  'wesichain-anthropic': {
+    crate: 'wesichain-anthropic',
+    description:
+      'Anthropic Claude client with streaming, tool use, and extended thinking support.',
+    install: 'cargo add wesichain-anthropic@0.3.0',
+    example: `use wesichain_anthropic::AnthropicLlm;\nuse wesichain_core::LlmRequest;\n\nlet llm = AnthropicLlm::from_env()?;\nlet response = llm.complete(LlmRequest::user("Hello, Claude!")).await?;`,
   },
   'wesichain-compat': {
     crate: 'wesichain-compat',
     description:
       'Compatibility-focused crate for incremental migration from LangChain/LangGraph patterns.',
-    install: 'cargo add wesichain-compat@0.2.1',
+    install: 'cargo add wesichain-compat@0.3.0',
     example: 'Use alongside core graph crates while migrating system by system.',
   },
 };

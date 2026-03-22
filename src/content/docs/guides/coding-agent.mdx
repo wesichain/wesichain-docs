@@ -1,0 +1,198 @@
+---
+title: Building a Coding Agent
+description: How to assemble the v0.3 coding agent stack with tools, MCP, and session tracking
+order: 6
+group: Guides
+---
+
+This guide walks through building an autonomous coding agent using the four crates introduced in v0.3:
+`wesichain-tools`, `wesichain-agent`, `wesichain-session`, and `wesichain-mcp`.
+
+## The Four Crates
+
+| Crate | Role |
+|---|---|
+| `wesichain-tools` | Filesystem, bash exec, git, glob, grep, patch tools with `PathGuard` sandboxing |
+| `wesichain-agent` | FSM/event runtime that dispatches tool calls and drives the ReAct loop |
+| `wesichain-session` | Session persistence, cost tracking, and token budget management |
+| `wesichain-mcp` | MCP client for connecting to external MCP servers over stdio or HTTP/SSE |
+
+## Setup
+
+Add dependencies to `Cargo.toml`:
+
+```toml
+[dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+wesichain-core = "0.3.0"
+wesichain-llm = "0.3.0"
+wesichain-tools = { version = "0.3.0", features = ["fs", "exec", "git"] }
+wesichain-agent = "0.3.0"
+wesichain-session = "0.3.0"
+wesichain-mcp = "0.3.0"   # optional
+```
+
+## 1) Set Up a ToolRegistry
+
+`ToolRegistry` collects tools and exposes their specs to the LLM.
+
+```rust
+use wesichain_tools::{PathGuard, ToolRegistry};
+use wesichain_tools::fs::{ReadFileTool, WriteFileTool, GlobTool};
+use wesichain_tools::exec::BashExecTool;
+use wesichain_tools::git::{GitStatusTool, GitDiffTool};
+
+// PathGuard restricts all tool calls to /workspace — prevents path traversal
+let guard = PathGuard::new("/workspace");
+
+let registry = ToolRegistry::new()
+    .register(ReadFileTool::new(guard.clone()))
+    .register(WriteFileTool::new(guard.clone()))
+    .register(GlobTool::new(guard.clone()))
+    .register(BashExecTool::new(guard.clone()))
+    .register(GitStatusTool::new(guard.clone()))
+    .register(GitDiffTool::new(guard));
+```
+
+## 2) Add PathGuard Sandboxing
+
+`PathGuard` validates every path argument before execution. Any tool call
+that attempts to escape the configured root is rejected with an error before
+the OS ever sees it.
+
+```rust
+// PathGuard::new() canonicalizes the root at construction time.
+// Pass the same guard to every tool — they share the same root constraint.
+let guard = PathGuard::new("/workspace");
+```
+
+To allow a sub-path (e.g. for read-only access to a fixtures directory):
+
+```rust
+let read_guard = PathGuard::new("/workspace/fixtures").read_only();
+let write_guard = PathGuard::new("/workspace/output");
+```
+
+## 3) Wire the AgentRuntime
+
+`AgentRuntime` drives the ReAct loop: call LLM → dispatch tool → observe result → repeat.
+
+```rust
+use wesichain_agent::{AgentRuntime, AgentConfig};
+use wesichain_core::LlmRequest;
+
+let config = AgentConfig::builder()
+    .max_iterations(20)
+    .build();
+
+let agent = AgentRuntime::builder()
+    .llm(llm)                          // Arc<dyn ToolCallingLlm>
+    .tools(registry.tool_specs())      // ToolSpec list from ToolRegistry
+    .config(config)
+    .build()?;
+
+let request = LlmRequest::user("Refactor src/lib.rs to reduce duplication.");
+let result = agent.run(request).await?;
+println!("{}", result.final_output);
+```
+
+## 4) Session Cost Tracking
+
+`wesichain-session` stores session state (messages, tool history) and tracks
+token usage and estimated cost per session.
+
+```rust
+use wesichain_session::{FileSessionStore, SessionManager};
+
+let store = FileSessionStore::new(".wesichain/sessions")?;
+let sessions = SessionManager::new(store);
+
+// Load or create session
+let mut session = sessions.load_or_create("my-coding-session").await?;
+
+// After agent run, save updated session
+session.record_run(&result);
+sessions.save(&session).await?;
+
+// Inspect cost
+println!("Tokens used: {}", session.total_tokens());
+println!("Estimated cost: ${:.4}", session.estimated_cost_usd());
+```
+
+## 5) Optional MCP: Connect to an External MCP Server
+
+MCP (Model Context Protocol) lets the agent discover and call tools exposed
+by an external server — for example, a language server, a browser automation
+tool, or a company-internal API surface.
+
+```rust
+use wesichain_mcp::{McpClient, McpTransport};
+
+// Connect over stdio (most common for local tools)
+let mcp = McpClient::connect(McpTransport::stdio("npx @modelcontextprotocol/server-filesystem /data")).await?;
+
+// Merge MCP tool specs into the registry
+let mcp_specs = mcp.list_tools().await?;
+let registry = registry.merge_specs(mcp_specs);
+
+// Pass to AgentRuntime as before — the agent dispatches MCP calls transparently
+let agent = AgentRuntime::builder()
+    .llm(llm)
+    .tools(registry.tool_specs())
+    .mcp_client(mcp)
+    .build()?;
+```
+
+## Full Working Example
+
+```rust
+use std::sync::Arc;
+
+use wesichain_agent::{AgentConfig, AgentRuntime};
+use wesichain_core::{LlmRequest, ToolCallingLlm};
+use wesichain_session::{FileSessionStore, SessionManager};
+use wesichain_tools::exec::BashExecTool;
+use wesichain_tools::fs::{GlobTool, ReadFileTool, WriteFileTool};
+use wesichain_tools::{PathGuard, ToolRegistry};
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    // 1. LLM (any ToolCallingLlm impl — OpenAI, Ollama, Groq, etc.)
+    let llm: Arc<dyn ToolCallingLlm> = Arc::new(build_llm()?);
+
+    // 2. Tools
+    let guard = PathGuard::new(std::env::current_dir()?);
+    let registry = ToolRegistry::new()
+        .register(ReadFileTool::new(guard.clone()))
+        .register(WriteFileTool::new(guard.clone()))
+        .register(GlobTool::new(guard.clone()))
+        .register(BashExecTool::new(guard));
+
+    // 3. Agent
+    let agent = AgentRuntime::builder()
+        .llm(llm)
+        .tools(registry.tool_specs())
+        .config(AgentConfig::builder().max_iterations(15).build())
+        .build()?;
+
+    // 4. Session
+    let sessions = SessionManager::new(FileSessionStore::new(".wesichain/sessions")?);
+    let mut session = sessions.load_or_create("demo").await?;
+
+    // 5. Run
+    let task = "List all .rs files, then add a doc comment to every public fn in src/lib.rs";
+    let result = agent.run(LlmRequest::user(task)).await?;
+
+    session.record_run(&result);
+    sessions.save(&session).await?;
+
+    println!("Done. Tokens: {}  Cost: ${:.4}", session.total_tokens(), session.estimated_cost_usd());
+    Ok(())
+}
+```
+
+## Next Steps
+
+- [Architecture Overview](/docs/architecture/overview) — see where these crates sit in the stack
+- [Checkpointing Guide](/docs/guides/checkpointing) — add resumable state to your agent
+- [Human-in-the-Loop Guide](/docs/guides/human-in-the-loop) — add approval gates between tool calls

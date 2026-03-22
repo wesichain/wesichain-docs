@@ -18,28 +18,69 @@ Wesichain is a modular Rust workspace.
 ```toml
 [dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-wesichain-core = "0.2.1"
-wesichain-llm = "0.2.1"
-wesichain-graph = "0.2.1"
+wesichain-core = "0.3.0"
+wesichain-llm = "0.3.0"
+wesichain-graph = "0.3.0"
 ```
 
 ## Add Retrieval / RAG
 
 ```toml
 [dependencies]
-wesichain-retrieval = "0.2.1"
-wesichain-rag = "0.2.1"
+wesichain-retrieval = "0.3.0"
+wesichain-rag = "0.3.0"
 ```
 
 ## Add Checkpoint Persistence
 
 ```toml
 [dependencies]
-wesichain-checkpoint-sqlite = "0.2.1"   # local/embedded
+wesichain-checkpoint-sqlite = "0.3.0"   # local/embedded
 # or
-wesichain-checkpoint-postgres = "0.2.1" # production DB
+wesichain-checkpoint-postgres = "0.3.0" # production DB
 # or
-wesichain-checkpoint-redis = "0.2.1"    # low-latency cache/session flows
+wesichain-checkpoint-redis = "0.3.0"    # low-latency cache/session flows
+```
+
+## Anthropic / Claude
+
+```toml
+[dependencies]
+wesichain-anthropic = "0.3.0"
+```
+
+## Coding Agent Stack
+
+```toml
+[dependencies]
+wesichain-tools = { version = "0.3.0", features = ["fs", "exec", "git"] }
+wesichain-agent = "0.3.0"
+wesichain-session = "0.3.0"
+wesichain-mcp = "0.3.0"   # optional: MCP server connections
+```
+
+## HTTP Server
+
+```toml
+[dependencies]
+wesichain-server = "0.3.0"
+```
+
+## Observability
+
+```toml
+[dependencies]
+wesichain-langsmith = "0.3.0"   # LangSmith
+# or
+wesichain-langfuse = "0.3.0"    # Langfuse
+# or
+wesichain-otel = "0.3.0"        # OpenTelemetry
+```
+
+## CLI
+
+```bash
+cargo install wesichain-cli  # wesichain new / wesichain run
 ```
 
 ## Crate Catalog

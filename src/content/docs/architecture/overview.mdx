@@ -8,6 +8,10 @@ order: 1
 Wesichain is a Rust-native framework
  for LLM applications with a modular workspace layout.
 
+:::note[v0.3 highlights]
+v0.3.0 ships 9 new crates: `wesichain-anthropic`, `wesichain-tools`, `wesichain-mcp`, `wesichain-session`, `wesichain-server`, `wesichain-cli`, `wesichain-langfuse`, `wesichain-otel`, and `wesichain-prompthub`. See [Installation](/docs/getting-started/installation) for the full dependency guide.
+:::
+
 ## Design Principles
 
 - **Modular-by-default**: choose only the crates you need.
@@ -21,13 +25,29 @@ Wesichain is a Rust-native framework
 
 - `wesichain-core`: base traits (`Runnable`, `Tool`, state contracts, errors)
 - `wesichain-prompt`: prompt template utilities
-- `wesichain-llm`: provider abstraction layer
+- `wesichain-llm`: provider abstraction layer (OpenAI, Ollama, Groq, Together AI, Azure, Mistral, DeepSeek, Google)
+
+### Providers
+
+- `wesichain-llm`: OpenAI, Ollama, Groq, Together AI, Azure, Mistral, DeepSeek, Google
+- `wesichain-anthropic`: Anthropic Claude with extended thinking and streaming _(new in v0.3)_
 
 ### Orchestration
 
 - `wesichain-graph`: graph runtime, conditional routing, interrupts, checkpoint-aware execution
 - `wesichain-agent`: FSM-oriented runtime track for v0.3 evented agents
 - `wesichain-memory`: memory primitives (buffer/window/summary)
+
+### Agentic Tooling _(new in v0.3)_
+
+- `wesichain-tools`: coding tools (fs, bash, git, glob, grep, patch) with `PathGuard` sandboxing
+- `wesichain-mcp`: MCP client with stdio + HTTP/SSE transport
+- `wesichain-session`: session persistence and cost/token tracking
+
+### Server & CLI _(new in v0.3)_
+
+- `wesichain-server`: Axum HTTP server with Bearer auth and SSE streaming
+- `wesichain-cli`: `wesichain new` / `wesichain run` interactive REPL
 
 ### Retrieval + RAG
 
@@ -37,7 +57,7 @@ Wesichain is a Rust-native framework
 ### Persistence + Observability
 
 - checkpoints: `wesichain-checkpoint-sql`, `wesichain-checkpoint-sqlite`, `wesichain-checkpoint-postgres`, `wesichain-checkpoint-redis`
-- observability: `wesichain-langsmith`
+- observability: `wesichain-langsmith`, `wesichain-langfuse` _(new in v0.3)_, `wesichain-otel` _(new in v0.3)_
 
 ## Recommended Starting Point
 
@@ -46,6 +66,12 @@ For most projects:
 1. Start with `wesichain-core`, `wesichain-llm`, `wesichain-graph`.
 2. Use `ReActGraphBuilder` for tool-using ReAct flows.
 3. Add checkpoint backend and retrieval crates only when needed.
+
+For **coding / autonomous agents** (new in v0.3):
+
+1. Add `wesichain-tools` (with `fs`, `exec`, `git` features) + `wesichain-agent`.
+2. Add `wesichain-session` for cost/token tracking and `wesichain-mcp` for MCP server connections.
+3. See the [Coding Agent Guide](/docs/guides/coding-agent).
 
 ## Runtime Notes
 
