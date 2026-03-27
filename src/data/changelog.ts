@@ -36,6 +36,14 @@ export const changelog: ChangelogEntry[] = [
         ]
       },
       {
+        heading: 'AI Developer Experience',
+        items: [
+          '11 Claude Code skills for instant framework knowledge: wesichain-core, wesichain-graph, wesichain-llm, wesichain-memory, wesichain-checkpoint, wesichain-embeddings, wesichain-tools, wesichain-prompt, wesichain-langsmith, wesichain-rag, wesichain-react',
+          'Download `wesichain.skills` from GitHub Releases and drag into Claude Code',
+          'Skills provide copy-pasteable patterns for ReAct agents, RAG pipelines, checkpointing, and more',
+        ]
+      },
+      {
         heading: 'Infrastructure',
         items: [
           'All 29 publishable crates have keywords, categories, and readme fields on crates.io',
