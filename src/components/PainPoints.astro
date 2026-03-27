@@ -8,52 +8,52 @@ const upperMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibP
 
 const painPoints = [
   {
-    icon: '🐌',
-    label: 'snail',
-    title: 'Throughput Evidence',
-    subtitle: 'Python: Global Interpreter Lock',
-    description: `Published benchmark notes list typical Python recursive splitters around ${typicalPythonSplitterRangeMibPerSec.low}-${typicalPythonSplitterRangeMibPerSec.high} MiB/s for similar workloads.`,
-    solution: `Wesichain recursive splitter measures ${splitterFloor}-${splitterPeak} MiB/s in current Criterion artifacts.`,
-    stat: `${lowerMultiplier}-${upperMultiplier}x`,
-    statLabel: 'splitter throughput range'
+    icon: '🤖',
+    label: 'robot',
+    title: 'AI-Native Development',
+    subtitle: 'Framework knowledge, instantly',
+    description: `Other frameworks require days of documentation reading. Wesichain includes 11 Claude Code skills so AI agents understand the entire framework immediately.`,
+    solution: `Download the Skills Pack, drag into Claude Code, and start building. "Create a ReAct agent" generates working code instantly.`,
+    stat: '11',
+    statLabel: 'built-in AI skills'
   },
   {
-    icon: '💾',
-    label: 'floppy disk',
-    title: 'Reproducible Artifacts',
-    subtitle: 'Performance claims need provenance',
-    description: 'Marketing numbers drift fast when they are not tied to versioned benchmark outputs.',
-    solution: 'Wesichain keeps benchmark snapshots under docs/benchmarks/data with run metadata and hardware context.',
-    stat: 'JSON',
-    statLabel: 'snapshot artifacts'
+    icon: '⚡',
+    label: 'lightning',
+    title: 'Performance That Scales',
+    subtitle: 'Rust-native throughput',
+    description: `Python agents hit the GIL wall. Text processing, chunking, and embedding operations block your event loop.`,
+    solution: `Wesichain uses Tokio for true parallelism. Recursive text splitting hits ${splitterFloor}-${splitterPeak} MiB/s — ${lowerMultiplier}-${upperMultiplier}x typical Python performance.`,
+    stat: `${lowerMultiplier}-${upperMultiplier}x`,
+    statLabel: 'faster text processing'
   },
   {
     icon: '📦',
     label: 'package',
-    title: 'Methodology Transparency',
-    subtitle: 'Re-run locally anytime',
-    description: 'Benchmark trust comes from reproducibility, not one-off charts.',
-    solution: 'The docs include runnable commands and dataset references so teams can validate on their own hardware.',
-    stat: '1 cmd',
-    statLabel: 'to reproduce splitter benchmark'
+    title: 'Production-Ready',
+    subtitle: 'Deploy anywhere',
+    description: 'Python deployments need virtualenvs, dependency management, and platform-specific wheels.',
+    solution: 'Compile to a single binary. Deploy to AWS Lambda, Kubernetes, or edge — no runtime dependencies. 2-5 MB memory per agent vs 80-150 MB in Python.',
+    stat: '2-5 MB',
+    statLabel: 'memory per agent'
   }
 ];
 ---
 
-<section class="py-24 bg-neutral-900/30 border-y border-neutral-800" aria-labelledby="why-rust-heading">
+<section class="py-24 bg-neutral-900/30 border-y border-neutral-800" aria-labelledby="why-wesichain-heading">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <h2 id="why-rust-heading" class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-        Why Rust for LLM Agents?
+      <h2 id="why-wesichain-heading" class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        Why Teams Choose Wesichain
       </h2>
       <p class="mt-4 text-lg text-neutral-400">
-        Keep performance messaging anchored to benchmark artifacts
+        Built for developers who want AI assistance, Rust performance, and production reliability
       </p>
     </div>
 
     <div class="grid gap-8 md:grid-cols-3">
       {painPoints.map((point) => (
-        <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-8">
+        <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-8 hover:border-neutral-700 transition-colors">
           {/* Icon */}
           <div class="text-4xl mb-4" role="img" aria-label={point.label}>{point.icon}</div>
 
