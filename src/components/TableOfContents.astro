@@ -11,19 +11,21 @@ const { headings } = Astro.props;
 ---
 
 {headings.length > 0 && (
-  <aside class="hidden xl:block w-64 shrink-0">
+  <aside class="hidden xl:block w-56 shrink-0">
     <nav class="sticky top-20">
-      <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <p class="mb-4 text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
         On this page
-      </h3>
-      <ul class="space-y-2">
+      </p>
+      <ul class="space-y-1">
         {headings.filter(h => h.depth <= 3).map(heading => (
           <li>
             <a
               href={`#${heading.slug}`}
               class:list={[
-                'block text-sm transition-colors hover:text-white',
-                heading.depth === 2 ? 'text-neutral-400' : 'pl-4 text-neutral-500'
+                'block text-xs leading-snug transition-colors py-0.5',
+                heading.depth === 2
+                  ? 'text-neutral-500 hover:text-neutral-200'
+                  : 'pl-3 text-neutral-600 hover:text-neutral-400 border-l border-neutral-800',
               ]}
             >
               {heading.text}

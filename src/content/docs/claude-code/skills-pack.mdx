@@ -1,0 +1,228 @@
+---
+title: AI Skills Pack
+description: Install the Wesichain Skills Pack for Claude Code, Cursor, Windsurf, GitHub Copilot, Continue.dev, Aider, and OpenCode — instant framework knowledge for all 11 Wesichain APIs
+order: 1
+group: AI Tools
+lastUpdated: "2026-03-28"
+---
+
+The **Wesichain Skills Pack** is a single file (`wesichain.skills`) that gives any supported AI coding tool deep knowledge of the Wesichain framework — every API, pattern, and golden rule across all 11 crates.
+
+## Installation
+
+### One-line install (recommended)
+
+```bash
+curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+```
+
+Auto-detects which tools you have installed and installs the right files for each one.
+No restart required.
+
+**Install for a specific tool:**
+
+```bash
+WESICHAIN_TOOL=cursor  curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+WESICHAIN_TOOL=windsurf curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+WESICHAIN_TOOL=copilot  curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+WESICHAIN_TOOL=continue curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+WESICHAIN_TOOL=aider    curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+WESICHAIN_TOOL=opencode curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+WESICHAIN_TOOL=all      curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+```
+
+**Other options:**
+
+```bash
+# Install a specific version
+WESICHAIN_VERSION=0.4.0 curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+
+# Overwrite existing files
+WESICHAIN_FORCE=true curl -fsSL https://wesichain.pages.dev/skills.sh | bash
+```
+
+---
+
+## Supported Tools
+
+| Tool | Files installed | Location | Notes |
+|---|---|---|---|
+| **Claude Code** | `wesichain-{skill}/SKILL.md` x11 | `~/.config/claude/skills/` | Global; drag-and-drop also supported |
+| **OpenCode** | `wesichain-{skill}/SKILL.md` x11 | `~/.config/opencode/skills/` | Global; auto-discovers skills |
+| **Cursor** | `wesichain-{skill}.mdc` x11 | `{project}/.cursor/rules/` | Project-local; activates by relevance |
+| **Windsurf** | `wesichain-{skill}.md` x11 | `{project}/.windsurf/rules/` | Project-local |
+| **GitHub Copilot** | `copilot-instructions.md` | `{project}/.github/` | Project-local; appends if file exists |
+| **Continue.dev** | `wesichain-{skill}.md` x11 | `{project}/.continue/rules/` | Project-local; auto-applies to `*.rs` files |
+| **Aider** | `CONVENTIONS.md` | `{project}/` | Project-local; appends if file exists |
+
+> **Project-local tools** (Cursor, Windsurf, Copilot, Continue, Aider) install relative to your current directory — run the installer from inside your Wesichain project.
+
+---
+
+## Manual Install
+
+### Claude Code — drag and drop
+
+1. Download `wesichain.skills` from [GitHub Releases](https://github.com/wesichain/wesichain/releases)
+2. Drag the file into your Claude Code chat window
+
+### Claude Code — copy to skills directory
+
+```bash
+cp wesichain.skills ~/.config/claude/skills/
+```
+
+### Cursor
+
+```bash
+mkdir -p .cursor/rules
+tar -xzf wesichain.skills --strip-components=2 -C .cursor/rules '_adapters/cursor'
+```
+
+### Windsurf
+
+```bash
+mkdir -p .windsurf/rules
+tar -xzf wesichain.skills --strip-components=2 -C .windsurf/rules '_adapters/windsurf'
+```
+
+### GitHub Copilot
+
+```bash
+mkdir -p .github
+tar -xzf wesichain.skills --strip-components=2 -C .github '_adapters/copilot'
+```
+
+### Continue.dev
+
+```bash
+mkdir -p .continue/rules
+tar -xzf wesichain.skills --strip-components=2 -C .continue/rules '_adapters/continue'
+```
+
+### Aider
+
+```bash
+tar -xzf wesichain.skills --strip-components=2 -C . '_adapters/aider'
+# Then add to .aider.conf.yml:  read: [CONVENTIONS.md]
+```
+
+### OpenCode
+
+```bash
+mkdir -p ~/.config/opencode/skills
+tar -xzf wesichain.skills --strip-components=2 -C ~/.config/opencode/skills '_adapters/opencode/.opencode'
+```
+
+### Build from source
+
+```bash
+cd wesichain/
+./package_skills.sh            # outputs wesichain.skills with all 6 tool adapters
+```
+
+---
+
+## Verifying the Installation
+
+### Claude Code
+
+Ask Claude Code:
+
+> "What is the Runnable trait in Wesichain and how do I compose two components with `.then()`?"
+
+You should get a response referencing `wesichain_core::Runnable`, `RunnableExt`, and the `.then()` composition pattern.
+
+### Cursor / Windsurf / Continue.dev
+
+Open a `.rs` file in your Wesichain project and ask:
+
+> "How do I add retry logic to a chain in Wesichain?"
+
+### GitHub Copilot
+
+Start typing Wesichain code — Copilot should autocomplete with correct types like `ReActGraphBuilder`, `WesichainError`, and proper `.then()` chaining.
+
+### Aider
+
+```bash
+aider --read CONVENTIONS.md
+# Then: "How do I implement a custom Tool for Wesichain?"
+```
+
+---
+
+## Included Skills
+
+11 skills covering the full framework:
+
+| Skill | What it knows | Key triggers |
+|---|---|---|
+| `wesichain-core` | `Runnable` trait, chain composition, streaming, retry logic | runnable, chain, `.then()`, stream |
+| `wesichain-graph` | `GraphBuilder`, ReAct patterns, conditional edges, state management | graph, GraphBuilder, conditional edge |
+| `wesichain-react` | `ReActGraphBuilder`, tool-loop agents, scratchpad state | react, agent, ReActGraphBuilder |
+| `wesichain-rag` | RAG pipelines, document chunking, vector stores, context injection | rag, retrieval, vector store, chunk |
+| `wesichain-llm` | OpenAI, DeepSeek, Google, Azure, Mistral, Ollama, tool calling, streaming | llm, openai, ollama, LlmRequest |
+| `wesichain-memory` | Buffer/summary/window/vector/entity memory, `MemoryRouter` | memory, conversation, chat history |
+| `wesichain-checkpoint` | SQLite, Postgres, Redis, InMemory persistence backends | checkpoint, persistence, resume |
+| `wesichain-embeddings` | OpenAI, Ollama, Google, Candle embedding providers | embedding, embed, vector |
+| `wesichain-tools` | Custom `Tool` trait, built-in file/HTTP/search tools, `ToolBundle` | tool, file tools, http tools, ToolBundle |
+| `wesichain-prompt` | `PromptTemplate`, `ChatPromptTemplate`, YAML loading, `PromptHub` | prompt, PromptTemplate, PromptHub |
+| `wesichain-langsmith` | LangSmith tracing, `CallbackHandler`, graph observer, sampling | langsmith, tracing, observability |
+
+---
+
+## Usage Examples
+
+### ReAct agent
+
+> "Create a ReAct agent with a web search tool and a calculator tool using `ReActGraphBuilder`"
+
+### RAG pipeline
+
+> "Set up RAG with Ollama embeddings, Qdrant as the vector store, and streaming responses"
+
+### Checkpoint persistence
+
+> "Add Postgres checkpointing so my graph can resume after a crash"
+
+### LLM providers
+
+> "Configure a DeepSeek client with tool calling support and streaming"
+
+### Custom tools
+
+> "Implement a Tool that reads a file and returns its contents, with proper error handling"
+
+### Conversation memory
+
+> "Add ConversationSummaryMemory with a sliding window fallback using MemoryRouter"
+
+### Observability
+
+> "Add LangSmith tracing to my graph with tag metadata and 50% sampling"
+
+---
+
+## Adding New Skills
+
+Create `.claude/skills/<skill-name>/SKILL.md` with this frontmatter:
+
+```yaml
+---
+name: my-skill
+description: |
+  One-line description used to decide when this skill is relevant.
+triggers:
+  - "keyword"
+  - "another trigger"
+---
+```
+
+Then add `When to Use`, `Quick Start`, `Key Patterns`, and `Golden Rules` sections, and re-run:
+
+```bash
+./package_skills.sh
+```
+
+The script automatically generates adapters for all 7 supported tools from the single `SKILL.md` source.

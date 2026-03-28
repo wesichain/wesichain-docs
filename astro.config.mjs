@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://wesichain.dev',
+  site: 'https://wesichain.pages.dev',
   output: 'static',
   integrations: [
     react(),

@@ -31,7 +31,7 @@ const defaultSchema = variant === 'landing' ? {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "Wesichain",
-  "url": Astro.site?.toString() || "https://wesichain.dev",
+  "url": Astro.site?.toString() || "https://wesichain.pages.dev",
   "description": description
 } : null;
 
@@ -81,7 +81,7 @@ const finalSchema = schema || defaultSchema;
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
     {finalSchema && (
       <script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />

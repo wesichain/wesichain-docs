@@ -1,0 +1,22 @@
+# Cloudflare Pages — custom response headers
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# Shell installer — served as plain text so curl can pipe it
+/skills.sh
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: no-cache, no-store, must-revalidate
+  X-Content-Type-Options: nosniff
+
+# Security headers for all pages
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Cache static assets aggressively
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

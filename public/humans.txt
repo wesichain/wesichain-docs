@@ -1,6 +1,6 @@
 /* TEAM */
   Developer: Wesichain Team
-  Site: https://wesichain.dev
+  Site: https://wesichain.pages.dev
   GitHub: https://github.com/wesichain
 
 /* SITE */

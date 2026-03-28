@@ -4,6 +4,7 @@ const GROUP_ORDER: Record<string, number> = {
   'Getting Started': 0,
   'Architecture': 1,
   'Guides': 2,
+  'AI Tools': 3,
 };
 
 export type NavEntry = {

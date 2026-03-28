@@ -9,6 +9,42 @@ const splitterPeak = Math.max(...splitterRows.map((row) => row.throughputMibPerS
 const splitterFloor = Math.min(...splitterRows.map((row) => row.throughputMibPerSec));
 const lowerMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibPerSec.high);
 const upperMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibPerSec.low);
+
+// Hero code block — set:html to safely render spans with special chars
+const heroCode = [
+  `<span class="text-neutral-700">// Build a production ReAct agent in &lt;15 lines</span>`,
+  `<span class="text-primary-400">use</span> <span class="text-neutral-300">wesichain_graph</span><span class="text-neutral-600">::</span><span class="text-rust-300">ReActGraphBuilder</span><span class="text-neutral-600">;</span>`,
+  `<span class="text-primary-400">use</span> <span class="text-neutral-300">wesichain_llm</span><span class="text-neutral-600">::</span><span class="text-rust-300">OpenAiClient</span><span class="text-neutral-600">;</span>`,
+  `<span class="text-primary-400">use</span> <span class="text-neutral-300">wesichain_checkpoint_sqlite</span><span class="text-neutral-600">::</span><span class="text-rust-300">SqliteCheckpointer</span><span class="text-neutral-600">;</span>`,
+  ``,
+  `<span class="text-primary-400">let</span> <span class="text-neutral-300">agent</span> <span class="text-neutral-600">=</span> <span class="text-rust-300">ReActGraphBuilder</span><span class="text-neutral-600">::</span><span class="text-neutral-300">new</span><span class="text-neutral-600">()</span>`,
+  `    <span class="text-neutral-600">.</span><span class="text-neutral-300">llm</span><span class="text-neutral-600">(</span><span class="text-rust-300">OpenAiClient</span><span class="text-neutral-600">::</span><span class="text-neutral-300">gpt4o</span><span class="text-neutral-600">(</span><span class="text-neutral-300">api_key</span><span class="text-neutral-600">))</span>`,
+  `    <span class="text-neutral-600">.</span><span class="text-neutral-300">tools</span><span class="text-neutral-600">(</span><span class="text-neutral-300">vec</span><span class="text-neutral-600">![</span><span class="text-neutral-300">web_search</span><span class="text-neutral-600">,</span> <span class="text-neutral-300">calculator</span><span class="text-neutral-600">])</span>`,
+  `    <span class="text-neutral-600">.</span><span class="text-neutral-300">checkpointer</span><span class="text-neutral-600">(</span>`,
+  `        <span class="text-rust-300">SqliteCheckpointer</span><span class="text-neutral-600">::</span><span class="text-neutral-300">new</span><span class="text-neutral-600">(</span><span class="text-green-500">"agent.db"</span><span class="text-neutral-600">).</span><span class="text-neutral-300">await</span><span class="text-neutral-600">?</span>`,
+  `    <span class="text-neutral-600">)</span>`,
+  `    <span class="text-neutral-600">.</span><span class="text-neutral-300">build</span><span class="text-neutral-600">()?;</span>`,
+  ``,
+  `<span class="text-primary-400">let</span> <span class="text-neutral-300">answer</span> <span class="text-neutral-600">=</span> <span class="text-neutral-300">agent</span>`,
+  `    <span class="text-neutral-600">.</span><span class="text-neutral-300">invoke</span><span class="text-neutral-600">(</span><span class="text-green-500">"Research Rust async runtimes"</span><span class="text-neutral-600">,</span> <span class="text-neutral-300">thread_id</span><span class="text-neutral-600">)</span>`,
+  `    <span class="text-neutral-600">.</span><span class="text-neutral-300">await</span><span class="text-neutral-600">?;</span>`,
+].join('\n');
+
+// AI Skills mockup code block
+const ragCode = [
+  `<span class="text-primary-400">use</span> <span class="text-neutral-300">wesichain_rag</span><span class="text-neutral-600">::</span><span class="text-rust-300">WesichainRag</span><span class="text-neutral-600">;</span>`,
+  `<span class="text-primary-400">use</span> <span class="text-neutral-300">wesichain_embeddings</span><span class="text-neutral-600">::</span><span class="text-rust-300">OllamaEmbedding</span><span class="text-neutral-600">;</span>`,
+  ``,
+  `<span class="text-primary-400">let</span> <span class="text-neutral-300">rag</span> <span class="text-neutral-600">=</span> <span class="text-rust-300">WesichainRag</span><span class="text-neutral-600">::</span><span class="text-neutral-300">builder</span><span class="text-neutral-600">()</span>`,
+  `    <span class="text-neutral-600">.</span><span class="text-neutral-300">with_embedder</span><span class="text-neutral-600">(</span>`,
+  `        <span class="text-rust-300">OllamaEmbedding</span><span class="text-neutral-600">::</span><span class="text-neutral-300">new</span><span class="text-neutral-600">(</span><span class="text-green-500">"http://localhost:11434"</span><span class="text-neutral-600">)</span>`,
+  `            <span class="text-neutral-600">.</span><span class="text-neutral-300">model</span><span class="text-neutral-600">(</span><span class="text-green-500">"nomic-embed-text"</span><span class="text-neutral-600">)</span>`,
+  `    <span class="text-neutral-600">)</span>`,
+  `    <span class="text-neutral-600">.</span><span class="text-neutral-300">build</span><span class="text-neutral-600">()?;</span>`,
+  ``,
+  `<span class="text-neutral-300">rag</span><span class="text-neutral-600">.</span><span class="text-neutral-300">add_documents</span><span class="text-neutral-600">(</span><span class="text-neutral-300">docs</span><span class="text-neutral-600">).</span><span class="text-neutral-300">await</span><span class="text-neutral-600">?;</span>`,
+  `<span class="text-primary-400">let</span> <span class="text-neutral-300">res</span> <span class="text-neutral-600">=</span> <span class="text-neutral-300">rag</span><span class="text-neutral-600">.</span><span class="text-neutral-300">query</span><span class="text-neutral-600">(</span><span class="text-green-500">"Your question"</span><span class="text-neutral-600">).</span><span class="text-neutral-300">await</span><span class="text-neutral-600">?;</span>`,
+].join('\n');
 ---
 
 <SiteLayout
@@ -16,299 +52,363 @@ const upperMultiplier = Math.round(splitterPeak / typicalPythonSplitterRangeMibP
   description="Build composable, performant LLM agents in Rust. High-throughput orchestration with reproducible benchmarks and native async support."
   variant="landing"
 >
-  <!-- v0.3.0 announcement banner -->
-  <div class="border-b border-rust-800/40 bg-gradient-to-r from-rust-950/40 via-rust-900/30 to-rust-950/40 py-3">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-      <p class="text-sm text-rust-200">
-        <span class="inline-flex items-center gap-2">
-          <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-          <strong>New:</strong> AI Skills Pack for Claude Code — instant framework knowledge
-        </span>
-        <a href="https://github.com/wesichain/wesichain/releases" class="ml-3 font-semibold underline hover:text-white transition-colors">Download →</a>
-      </p>
+  <!-- Announcement banner -->
+  <div class="border-b border-neutral-800 bg-neutral-950 py-2.5">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-3 text-sm">
+        <span class="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse shrink-0" aria-hidden="true"></span>
+        <span class="font-mono text-xs text-neutral-600">v0.3.0</span>
+        <span class="text-neutral-700" aria-hidden="true">·</span>
+        <span class="text-neutral-400 text-xs">AI Skills Pack for Claude Code</span>
+        <a
+          href="https://github.com/wesichain/wesichain/releases"
+          class="ml-1 text-xs text-rust-400 hover:text-rust-300 transition-colors"
+        >
+          Download →
+        </a>
+      </div>
     </div>
   </div>
 
   <div class="relative overflow-hidden">
-    <!-- Hero Section -->
-    <section class="relative pt-16 pb-24 sm:pt-24 sm:pb-32">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-          <div class="inline-flex items-center gap-2 rounded-full border border-rust-700/50 bg-rust-950/30 px-4 py-1.5 mb-8">
-            <span class="flex h-2 w-2 rounded-full bg-rust-500"></span>
-            <span class="text-sm text-rust-300">Backed by 11 Claude Code skills for instant AI assistance</span>
-          </div>
-          
-          <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            The AI-Native LLM Framework
-            <span class="text-rust-500">for Rust</span>
-          </h1>
-          <p class="mx-auto mt-6 max-w-2xl text-lg text-neutral-400">
-            Build production-grade agents with built-in AI assistance. Just say "Create a ReAct agent with tools" 
-            and Claude Code instantly knows Wesichain patterns.
-          </p>
-          <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+
+    <!-- ─── HERO ─────────────────────────────────────────────────────────── -->
+    <section class="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28">
+      <!-- Grid background -->
+      <div class="absolute inset-0 bg-grid" aria-hidden="true"></div>
+      <!-- Fade bottom edge to next section -->
+      <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-neutral-950 to-transparent" aria-hidden="true"></div>
+
+      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-12 xl:gap-20 items-start">
+
+          <!-- Left: Copy -->
+          <div class="pt-2">
             <a
-              href="/docs/getting-started/installation"
-              class="w-full sm:w-auto rounded-full bg-rust-600 px-8 py-3 text-base font-medium text-white hover:bg-rust-700 transition-colors shadow-lg shadow-rust-600/20"
+              href="/changelog"
+              class="inline-flex items-center gap-2 rounded-md border border-neutral-800 bg-neutral-900/80 px-3 py-1.5 mb-10 text-xs hover:border-neutral-700 transition-colors"
             >
-              Get Started in 5 Minutes
+              <span class="flex h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden="true"></span>
+              <span class="font-mono text-neutral-500">v0.3.0</span>
+              <span class="text-neutral-700" aria-hidden="true">·</span>
+              <span class="text-neutral-300">AI Skills Pack released</span>
+              <span class="text-neutral-500 ml-0.5">→</span>
             </a>
-            <a
-              href="https://github.com/wesichain/wesichain"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="w-full sm:w-auto rounded-full border border-neutral-700 bg-neutral-900 px-8 py-3 text-base font-medium text-white hover:bg-neutral-800 transition-colors"
-            >
-              <span class="flex items-center gap-2">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                Star on GitHub
-              </span>
-            </a>
-          </div>
-        </div>
 
-        <!-- Stats bar -->
-        <div class="mt-12 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-          <div class="text-center">
-            <div class="text-3xl font-bold text-white">22</div>
-            <div class="text-xs text-neutral-500 mt-1">production crates</div>
-          </div>
-          <div class="hidden sm:block w-px h-10 bg-neutral-800" aria-hidden="true" />
-          <div class="text-center">
-            <div class="text-3xl font-bold text-rust-400">11</div>
-            <div class="text-xs text-neutral-500 mt-1">AI skills for Claude Code</div>
-          </div>
-          <div class="hidden sm:block w-px h-10 bg-neutral-800" aria-hidden="true" />
-          <div class="text-center">
-            <div class="text-3xl font-bold text-white">8</div>
-            <div class="text-xs text-neutral-500 mt-1">LLM providers</div>
-          </div>
-          <div class="hidden sm:block w-px h-10 bg-neutral-800" aria-hidden="true" />
-          <div class="text-center">
-            <div class="text-3xl font-bold text-white">194</div>
-            <div class="text-xs text-neutral-500 mt-1">tests passing</div>
-          </div>
-        </div>
+            <h1 class="text-5xl font-extrabold tracking-tight text-white sm:text-6xl xl:text-7xl leading-[1.05] text-balance">
+              The AI-Native<br>
+              LLM Framework<br>
+              <span class="text-rust-500">for Rust.</span>
+            </h1>
 
-        <!-- Code Comparison -->
-        <div class="mt-8">
-          <CodeComparison />
-        </div>
-      </div>
-    </section>
-
-    <!-- AI Skills Pack Section -->
-    <section class="relative overflow-hidden border-y border-neutral-800 bg-gradient-to-b from-neutral-900/50 to-neutral-950 py-24">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid gap-12 lg:grid-cols-2 items-center">
-          <div>
-            <div class="inline-flex items-center gap-2 rounded-full border border-rust-500/30 bg-rust-950/20 px-3 py-1 mb-6">
-              <span class="text-rust-400 text-sm font-medium">AI-Native Development</span>
-            </div>
-            <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl mb-6">
-              The Only Rust LLM Framework with
-              <span class="text-rust-400">Built-in AI Assistance</span>
-            </h2>
-            <p class="text-lg text-neutral-400 mb-8">
-              Download the Wesichain Skills Pack and Claude Code instantly understands the entire framework. 
-              No more digging through docs—just describe what you want to build.
+            <p class="mt-6 text-lg text-neutral-400 max-w-lg leading-relaxed">
+              Build production-grade agents with built-in AI assistance.
+              11 Claude Code skills mean you describe what you need — and get
+              working Rust code, instantly.
             </p>
-            
-            <div class="space-y-4">
-              <div class="flex items-start gap-4">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rust-500/10 flex-shrink-0 mt-1">
-                  <span class="text-rust-400 text-lg">💬</span>
-                </div>
-                <div>
-                  <h3 class="text-white font-semibold mb-1">"Build a ReAct agent with web search"</h3>
-                  <p class="text-neutral-400 text-sm">Claude Code generates working code using GraphBuilder, ToolNode, and checkpoint patterns</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start gap-4">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rust-500/10 flex-shrink-0 mt-1">
-                  <span class="text-rust-400 text-lg">🧠</span>
-                </div>
-                <div>
-                  <h3 class="text-white font-semibold mb-1">"Which memory type for 10k token context?"</h3>
-                  <p class="text-neutral-400 text-sm">Instant recommendations: ConversationSummaryMemory with context compression</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start gap-4">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rust-500/10 flex-shrink-0 mt-1">
-                  <span class="text-rust-400 text-lg">💾</span>
-                </div>
-                <div>
-                  <h3 class="text-white font-semibold mb-1">"Add Postgres checkpointing to my agent"</h3>
-                  <p class="text-neutral-400 text-sm">Complete setup code with connection pooling and migration handling</p>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mt-8">
+
+            <div class="mt-10 flex flex-wrap items-center gap-4">
               <a
-                href="https://github.com/wesichain/wesichain/releases"
-                class="inline-flex items-center gap-2 rounded-full bg-rust-600 px-6 py-3 text-base font-medium text-white hover:bg-rust-700 transition-colors shadow-lg shadow-rust-600/20"
+                href="/docs/getting-started/installation"
+                class="rounded-md bg-rust-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rust-500 transition-colors"
               >
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download Skills Pack (wesichain.skills)
+                Get Started
               </a>
-              <p class="mt-3 text-sm text-neutral-500">Drag into Claude Code or install to ~/.config/claude/skills/</p>
+              <a
+                href="https://github.com/wesichain/wesichain"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 rounded-md border border-neutral-700 px-5 py-2.5 text-sm font-medium text-neutral-300 hover:border-neutral-600 hover:text-white transition-colors"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                GitHub
+              </a>
+            </div>
+
+            <!-- Inline stats — monospace, subtle -->
+            <div class="mt-12 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm">
+              <span><span class="text-white font-semibold">22</span> <span class="text-neutral-600">crates</span></span>
+              <span class="text-neutral-800" aria-hidden="true">·</span>
+              <span><span class="text-rust-400 font-semibold">11</span> <span class="text-neutral-600">AI skills</span></span>
+              <span class="text-neutral-800" aria-hidden="true">·</span>
+              <span><span class="text-white font-semibold">8</span> <span class="text-neutral-600">providers</span></span>
+              <span class="text-neutral-800" aria-hidden="true">·</span>
+              <span><span class="text-white font-semibold">194</span> <span class="text-neutral-600">tests passing</span></span>
             </div>
           </div>
-          
-          <div class="relative">
-            <div class="absolute -inset-4 bg-gradient-to-r from-rust-500/20 to-rust-500/20 rounded-2xl blur-2xl opacity-50"></div>
-            <div class="relative rounded-xl border border-neutral-800 bg-neutral-950 p-6 shadow-2xl">
-              <div class="flex items-center gap-2 mb-4 border-b border-neutral-800 pb-3">
-                <div class="flex gap-1.5">
-                  <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-                  <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                  <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
-                </div>
-                <span class="ml-2 text-xs text-neutral-500">Claude Code</span>
-              </div>
-              <div class="space-y-3 font-mono text-sm">
-                <div class="text-neutral-400">
-                  <span class="text-rust-400">User:</span> Create a RAG pipeline with Ollama embeddings
-                </div>
-                <div class="text-neutral-300">
-                  <span class="text-green-400">Claude:</span> I'll create a RAG pipeline using wesichain-rag with Ollama embeddings. Let me set this up:
-                </div>
-                <div class="rounded-lg bg-neutral-900/50 p-3 border border-neutral-800/50">
-                  <pre class="text-xs text-neutral-300 overflow-x-auto"><code>use wesichain_rag::WesichainRag;
-use wesichain_embeddings::OllamaEmbedding;
 
-let rag = WesichainRag::builder()
-    .with_embedder(
-        OllamaEmbedding::new("http://localhost:11434")
-            .model("nomic-embed-text")
-    )
-    .build()?;
-
-rag.add_documents(docs).await?;
-let response = rag.query("Your question").await?;</code></pre>
+          <!-- Right: Code terminal -->
+          <div class="lg:pt-4">
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 overflow-hidden shadow-2xl">
+              <!-- Chrome bar -->
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-neutral-800 bg-neutral-900/60">
+                <div class="flex gap-1.5" aria-hidden="true">
+                  <div class="w-2.5 h-2.5 rounded-full bg-neutral-700"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-neutral-700"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-neutral-700"></div>
                 </div>
-                <div class="text-neutral-500 text-xs">
-                  ✓ Pattern from wesichain-rag skill applied
-                </div>
+                <span class="ml-2 font-mono text-xs text-neutral-600">react_agent.rs</span>
               </div>
+              <!-- Code -->
+              <pre class="p-6 text-sm font-mono leading-relaxed overflow-x-auto"><code set:html={heroCode} /></pre>
             </div>
+            <p class="mt-3 font-mono text-xs text-neutral-700">
+              — generated by Claude Code via the wesichain-react skill
+            </p>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- Pain Points Section -->
+    <!-- ─── HOW IT WORKS ──────────────────────────────────────────────────── -->
+    <section class="py-20 border-y border-neutral-800">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+        <div class="mb-12">
+          <p class="font-mono text-xs text-neutral-600 uppercase tracking-widest mb-3">How it works</p>
+          <h2 class="text-2xl font-bold tracking-tight text-white">
+            From description to production code in minutes
+          </h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-10 lg:gap-16">
+          <div>
+            <div class="font-mono text-xs text-neutral-700 mb-4">01</div>
+            <h3 class="text-base font-semibold text-white mb-3">Install the Skills Pack</h3>
+            <p class="text-sm text-neutral-500 leading-relaxed mb-3">
+              Run one command to install all 11 skills into Claude Code automatically.
+            </p>
+            <code class="block rounded-md border border-neutral-800 bg-neutral-900/80 px-3 py-2 font-mono text-xs text-neutral-400 leading-relaxed overflow-x-auto whitespace-nowrap">curl -fsSL https://wesichain.pages.dev/skills.sh | bash</code>
+          </div>
+          <div>
+            <div class="font-mono text-xs text-neutral-700 mb-4">02</div>
+            <h3 class="text-base font-semibold text-white mb-3">Describe what you need</h3>
+            <p class="text-sm text-neutral-500 leading-relaxed">
+              Tell Claude Code what to build.
+              <span class="text-neutral-400 italic">"Create a RAG pipeline with Qdrant and Ollama embeddings"</span>
+              is all it takes.
+            </p>
+          </div>
+          <div>
+            <div class="font-mono text-xs text-neutral-700 mb-4">03</div>
+            <h3 class="text-base font-semibold text-white mb-3">Ship production Rust</h3>
+            <p class="text-sm text-neutral-500 leading-relaxed">
+              Get complete, idiomatic Wesichain code — proper error handling,
+              checkpointing, and streaming — ready to compile and run.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-10 pt-8 border-t border-neutral-900">
+          <a href="/docs/claude-code/skills-pack" class="font-mono text-xs text-rust-500 hover:text-rust-400 transition-colors">
+            Read the full Skills Pack guide →
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── CODE COMPARISON ──────────────────────────────────────────────── -->
+    <section class="py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mb-10">
+          <p class="font-mono text-xs text-neutral-600 uppercase tracking-widest mb-3">Python → Rust</p>
+          <h2 class="text-2xl font-bold tracking-tight text-white">
+            Familiar patterns, Rust performance
+          </h2>
+          <p class="mt-2 text-neutral-500 text-sm max-w-xl">
+            Wesichain mirrors LangChain and LangGraph concepts so migration is straightforward.
+          </p>
+        </div>
+        <CodeComparison />
+      </div>
+    </section>
+
+    <!-- ─── AI SKILLS PACK ───────────────────────────────────────────────── -->
+    <section class="relative border-y border-neutral-800 py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid gap-14 lg:grid-cols-2 items-start">
+
+          <!-- Left: Description -->
+          <div>
+            <p class="font-mono text-xs text-neutral-600 uppercase tracking-widest mb-4">AI-Native Development</p>
+            <h2 class="text-3xl font-bold tracking-tight text-white mb-5">
+              The only Rust LLM framework with built-in AI assistance
+            </h2>
+            <p class="text-neutral-400 text-base leading-relaxed mb-8">
+              Download the Wesichain Skills Pack and Claude Code instantly understands
+              the entire framework — every API, pattern, and golden rule.
+              No more digging through docs.
+            </p>
+
+            <div class="space-y-5">
+              {[
+                {
+                  prompt: '"Build a ReAct agent with web search"',
+                  result: 'Generates GraphBuilder, ToolNode, and checkpoint code',
+                },
+                {
+                  prompt: '"Which memory type for 10k token context?"',
+                  result: 'Recommends ConversationSummaryMemory with context compression',
+                },
+                {
+                  prompt: '"Add Postgres checkpointing to my agent"',
+                  result: 'Complete setup with connection pooling and migration handling',
+                },
+              ].map(item => (
+                <div class="flex items-start gap-4">
+                  <div class="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-rust-600 mt-2" aria-hidden="true"></div>
+                  <div>
+                    <p class="font-mono text-sm text-neutral-300">{item.prompt}</p>
+                    <p class="text-xs text-neutral-600 mt-1">{item.result}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <!-- One-line install -->
+            <div class="mt-10">
+              <p class="font-mono text-xs text-neutral-600 uppercase tracking-widest mb-3">One-line install</p>
+              <div class="flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900/80 px-4 py-3 font-mono text-sm">
+                <span class="text-neutral-600 shrink-0 select-none">$</span>
+                <code class="text-neutral-200 flex-1 overflow-x-auto whitespace-nowrap">curl -fsSL https://wesichain.pages.dev/skills.sh | bash</code>
+                <span class="shrink-0 text-xs text-neutral-700 pl-2 border-l border-neutral-800">copy</span>
+              </div>
+              <div class="mt-4 flex items-center gap-4">
+                <a href="/docs/claude-code/skills-pack" class="text-sm text-rust-500 hover:text-rust-400 transition-colors font-medium">
+                  Full install guide →
+                </a>
+                <a
+                  href="https://github.com/wesichain/wesichain/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-sm text-neutral-600 hover:text-neutral-400 transition-colors"
+                >
+                  GitHub Releases
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Claude Code terminal mockup -->
+          <div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 overflow-hidden">
+              <!-- Terminal bar -->
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-neutral-800 bg-neutral-900/50">
+                <div class="flex gap-1.5" aria-hidden="true">
+                  <div class="w-2.5 h-2.5 rounded-full bg-neutral-800"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-neutral-800"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-neutral-800"></div>
+                </div>
+                <span class="ml-2 font-mono text-xs text-neutral-600">Claude Code</span>
+              </div>
+              <!-- Conversation -->
+              <div class="p-6 space-y-4 font-mono text-sm">
+                <div>
+                  <span class="text-neutral-600 text-xs uppercase tracking-wider block mb-1.5">User</span>
+                  <p class="text-neutral-300">Create a RAG pipeline with Ollama embeddings</p>
+                </div>
+                <div>
+                  <span class="text-neutral-600 text-xs uppercase tracking-wider block mb-1.5">Claude</span>
+                  <p class="text-neutral-400 text-xs mb-3">Using wesichain-rag skill — setting up the pipeline:</p>
+                  <div class="rounded-lg border border-neutral-800 bg-neutral-900 p-4">
+                    <pre class="text-xs text-neutral-300 overflow-x-auto leading-relaxed"><code set:html={ragCode} /></pre>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                  <span class="text-neutral-700 text-xs font-mono">✓ wesichain-rag skill applied</span>
+                  <span class="animate-blink text-neutral-700 text-xs">▍</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PAIN POINTS ───────────────────────────────────────────────────── -->
     <PainPoints />
 
-    <!-- Features Section with Code Snippets -->
-    <section class="border-y border-neutral-800 bg-neutral-900/50 py-24">
+    <!-- ─── FEATURES ─────────────────────────────────────────────────────── -->
+    <section class="py-24">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-          <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Everything you need for production agents
-          </h2>
-          <p class="mt-4 text-lg text-neutral-400">
-            Familiar patterns, Rust performance, built for scale
+
+        <div class="mb-14">
+          <h2 class="text-3xl font-bold tracking-tight text-white">Built for production</h2>
+          <p class="mt-3 text-neutral-500 max-w-lg text-sm leading-relaxed">
+            Familiar patterns from LangChain and LangGraph, rewritten for Rust performance and reliability.
           </p>
         </div>
 
-        <div class="grid gap-8 lg:grid-cols-3">
-          <!-- Feature 1: Composable Chains -->
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-rust-600/10 mb-6">
-              <svg class="h-6 w-6 text-rust-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-white mb-2">Composable Chains</h3>
-            <p class="text-neutral-400 text-sm mb-4">
-              Build LLM workflows using familiar Runnable patterns with LCEL-style composition.
+        <!-- Joined-panel grid — avoids the "3 identical cards" pattern -->
+        <div class="grid gap-px bg-neutral-800 rounded-xl overflow-hidden md:grid-cols-3">
+          <!-- Feature 01 -->
+          <div class="bg-neutral-950 p-8 flex flex-col">
+            <div class="font-mono text-xs text-neutral-700 mb-6">01</div>
+            <h3 class="text-base font-semibold text-white mb-3">Composable Chains</h3>
+            <p class="text-sm text-neutral-500 leading-relaxed mb-6 flex-1">
+              LCEL-style composition with type-safe chaining. Build once, reuse everywhere, retry with a single method call.
             </p>
-            <div class="rounded-lg bg-neutral-950 p-4 border border-neutral-800">
-              <pre class="text-xs text-neutral-300 overflow-x-auto"><code set:html={`let chain = prompt
-  .then(llm)
-  .then(parser)
-  .with_retries(3);`} /></pre>
-            </div>
-            <a href="/docs/guides/architecture-overview" class="mt-4 inline-flex items-center text-sm text-rust-400 hover:text-rust-300">
+            <pre class="rounded-lg bg-neutral-900 p-4 text-xs font-mono text-neutral-400 overflow-x-auto"><code set:html={`let chain = prompt\n  .then(llm)\n  .then(parser)\n  .with_retries(3);`} /></pre>
+            <a href="/docs/guides/architecture-overview" class="mt-5 font-mono text-xs text-rust-500 hover:text-rust-400 transition-colors">
               Learn more →
             </a>
           </div>
 
-          <!-- Feature 2: Resumable Graphs -->
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-rust-600/10 mb-6">
-              <svg class="h-6 w-6 text-rust-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-white mb-2">Resumable Graphs</h3>
-            <p class="text-neutral-400 text-sm mb-4">
-              Stateful agent workflows with checkpoint persistence. Pause, resume, and debug with confidence.
+          <!-- Feature 02 -->
+          <div class="bg-neutral-950 p-8 flex flex-col">
+            <div class="font-mono text-xs text-neutral-700 mb-6">02</div>
+            <h3 class="text-base font-semibold text-white mb-3">Resumable Graphs</h3>
+            <p class="text-sm text-neutral-500 leading-relaxed mb-6 flex-1">
+              Stateful agent workflows with checkpoint persistence across SQLite, Postgres, or Redis. Pause, resume, debug.
             </p>
-            <div class="rounded-lg bg-neutral-950 p-4 border border-neutral-800">
-              <pre class="text-xs text-neutral-300 overflow-x-auto"><code set:html={`// Checkpoint anywhere
-let state = graph.checkpoint().await?;
-
-// Resume later
-graph.resume(state).await?;`} /></pre>
-            </div>
-            <a href="/docs/guides/checkpointing" class="mt-4 inline-flex items-center text-sm text-rust-400 hover:text-rust-300">
+            <pre class="rounded-lg bg-neutral-900 p-4 text-xs font-mono text-neutral-400 overflow-x-auto"><code set:html={`// Checkpoint anywhere\nlet state = graph.checkpoint().await?;\n\n// Resume later\ngraph.resume(state).await?;`} /></pre>
+            <a href="/docs/guides/checkpointing" class="mt-5 font-mono text-xs text-rust-500 hover:text-rust-400 transition-colors">
               Learn more →
             </a>
           </div>
 
-          <!-- Feature 3: Streaming-First -->
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-rust-600/10 mb-6">
-              <svg class="h-6 w-6 text-rust-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-white mb-2">Streaming-First</h3>
-            <p class="text-neutral-400 text-sm mb-4">
-              Built for real-time applications with native async/await and streaming support throughout.
+          <!-- Feature 03 -->
+          <div class="bg-neutral-950 p-8 flex flex-col">
+            <div class="font-mono text-xs text-neutral-700 mb-6">03</div>
+            <h3 class="text-base font-semibold text-white mb-3">Streaming-First</h3>
+            <p class="text-sm text-neutral-500 leading-relaxed mb-6 flex-1">
+              Native async/await with Tokio. Stream tokens, tool calls, and state updates to any consumer in real time.
             </p>
-            <div class="rounded-lg bg-neutral-950 p-4 border border-neutral-800">
-              <pre class="text-xs text-neutral-300 overflow-x-auto"><code set:html={`let mut stream = chain.stream(input).await?;
-while let Some(chunk) = stream.next().await {
-  sse.send(chunk).await?;
-}`} /></pre>
-            </div>
-            <a href="/crate-selector" class="mt-4 inline-flex items-center text-sm text-rust-400 hover:text-rust-300">
+            <pre class="rounded-lg bg-neutral-900 p-4 text-xs font-mono text-neutral-400 overflow-x-auto"><code set:html={`let mut stream = chain.stream(input);\nwhile let Some(chunk) = stream.next().await {\n  sse.send(chunk).await?;\n}`} /></pre>
+            <a href="/crate-selector" class="mt-5 font-mono text-xs text-rust-500 hover:text-rust-400 transition-colors">
               Find your crate →
             </a>
           </div>
         </div>
 
-        <!-- CTA row -->
-        <div class="mt-12 text-center">
+        <!-- Secondary CTA -->
+        <div class="mt-8">
           <a
             href="/crate-selector"
-            class="inline-flex items-center gap-2 rounded-full bg-neutral-800 px-6 py-3 text-sm font-medium text-white hover:bg-neutral-700 transition-colors"
+            class="inline-flex items-center gap-2 rounded-md border border-neutral-800 px-4 py-2 text-sm text-neutral-500 hover:border-neutral-700 hover:text-neutral-300 transition-colors"
           >
-            <span>Not sure which crate you need?</span>
-            <span class="text-rust-400">Try the Crate Selector →</span>
+            Not sure which crate you need?
+            <span class="text-rust-500">Try the Crate Selector →</span>
           </a>
         </div>
+
       </div>
     </section>
 
-    <!-- Provider ecosystem row -->
-    <section class="py-16 border-t border-neutral-800">
+    <!-- ─── PROVIDERS ─────────────────────────────────────────────────────── -->
+    <section class="py-14 border-t border-neutral-800">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <p class="text-center text-xs font-semibold text-neutral-500 mb-8 uppercase tracking-widest">
-          Supported Providers
+        <p class="font-mono text-xs text-neutral-700 uppercase tracking-widest mb-6">
+          Supported LLM Providers
         </p>
-        <div class="flex flex-wrap items-center justify-center gap-3">
+        <div class="flex flex-wrap gap-x-8 gap-y-3">
           {['OpenAI', 'Anthropic', 'Ollama', 'Groq', 'Together AI', 'Azure OpenAI', 'Mistral AI', 'Google Gemini', 'DeepSeek'].map(name => (
-            <span class="rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-300">
+            <span class="font-mono text-sm text-neutral-500 hover:text-neutral-300 transition-colors cursor-default">
               {name}
             </span>
           ))}
@@ -316,54 +416,61 @@ while let Some(chunk) = stream.next().await {
       </div>
     </section>
 
-    <!-- Performance Section -->
+    <!-- ─── PERFORMANCE ───────────────────────────────────────────────────── -->
     <PerformanceBars />
 
-    <!-- Benchmark Highlights / CTA Section -->
-    <section class="py-24 border-t border-neutral-800">
-      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl mb-8">
-          Current benchmark highlights
-        </h2>
+    <!-- ─── FINAL CTA ─────────────────────────────────────────────────────── -->
+    <section class="py-28 border-t border-neutral-800">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="max-w-2xl">
 
-        <!-- Stats -->
-        <div class="grid grid-cols-3 gap-8 mb-12">
-          <div>
-            <div class="text-4xl font-bold text-rust-500">{splitterPeak}</div>
-            <div class="text-sm text-neutral-400 mt-1">MiB/s peak splitter throughput</div>
+          <p class="font-mono text-xs text-neutral-700 uppercase tracking-widest mb-6">
+            Benchmark highlights — recursive text splitting
+          </p>
+
+          <div class="mb-10">
+            <p class="font-mono text-5xl font-bold text-white">{splitterPeak} <span class="text-neutral-700 text-2xl">MiB/s</span></p>
+            <p class="mt-2 text-neutral-600 text-sm">{lowerMultiplier}–{upperMultiplier}× faster than typical Python splitters · {splitterFloor} MiB/s at 1 MB input</p>
           </div>
-          <div>
-            <div class="text-4xl font-bold text-rust-500">{splitterFloor}</div>
-            <div class="text-sm text-neutral-400 mt-1">MiB/s at 1 MB input</div>
+
+          <h2 class="text-4xl font-extrabold tracking-tight text-white leading-tight">
+            Start building with<br>Wesichain today.
+          </h2>
+          <p class="mt-4 text-neutral-500 text-base max-w-md leading-relaxed">
+            22 focused crates. 11 Claude Code skills. Reproducible benchmarks.
+            Production Rust agents that compile to a single binary.
+          </p>
+
+          <div class="mt-10 flex flex-wrap items-center gap-4">
+            <a
+              href="/docs/getting-started/installation"
+              class="rounded-md bg-rust-600 px-6 py-3 text-sm font-semibold text-white hover:bg-rust-500 transition-colors"
+            >
+              Get Started
+            </a>
+            <a
+              href="https://github.com/wesichain/wesichain"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="rounded-md border border-neutral-700 px-6 py-3 text-sm font-medium text-neutral-400 hover:text-white hover:border-neutral-600 transition-colors"
+            >
+              Star on GitHub
+            </a>
+            <a
+              href="/docs/claude-code/skills-pack"
+              class="text-sm text-neutral-600 hover:text-neutral-400 transition-colors"
+            >
+              AI Skills Pack →
+            </a>
           </div>
-          <div>
-            <div class="text-4xl font-bold text-rust-500">{lowerMultiplier}-{upperMultiplier}x</div>
-            <div class="text-sm text-neutral-400 mt-1">vs typical Python splitters</div>
-          </div>
+
+          <p class="mt-10 font-mono text-xs text-neutral-800">
+            Sources: {benchmarkSources.splitterReadme} · {benchmarkSources.qdrantJson} · {benchmarkSources.weaviateJson}
+          </p>
+
         </div>
-
-        <!-- CTA -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a
-            href="/docs/getting-started/installation"
-            class="w-full sm:w-auto rounded-full bg-rust-600 px-8 py-3 text-base font-medium text-white hover:bg-rust-700 transition-colors"
-          >
-            Start Building Now
-          </a>
-          <a
-            href="https://github.com/wesichain/wesichain"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-full sm:w-auto rounded-full border border-neutral-700 bg-neutral-900 px-8 py-3 text-base font-medium text-white hover:bg-neutral-800 transition-colors"
-          >
-            Star on GitHub
-          </a>
-        </div>
-
-        <p class="mt-8 text-sm text-neutral-500">
-          Sources: <code>{benchmarkSources.splitterReadme}</code>, <code>{benchmarkSources.qdrantJson}</code>, <code>{benchmarkSources.weaviateJson}</code>.
-        </p>
       </div>
     </section>
+
   </div>
 </SiteLayout>

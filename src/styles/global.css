@@ -4,11 +4,8 @@
 
 @layer base {
   :root {
-    --color-bg: #0a0a0a;
-    --color-text: #fafafa;
-    --color-text-muted: #a3a3a3;
-    --color-border: #262626;
-    --color-primary: #ed6b3a;
+    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   }
 
   html {
@@ -17,20 +14,68 @@
 
   body {
     @apply bg-neutral-950 text-neutral-50 antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    font-kerning: normal;
   }
 
-  code {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    letter-spacing: -0.025em;
+  }
+
+  code, pre, kbd, samp {
+    font-family: var(--font-mono);
+    font-variant-ligatures: none;
   }
 }
 
 @layer components {
+  /* Subtle grid background — used in hero sections */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Prose documentation styles */
   .prose-docs {
     @apply prose prose-invert prose-neutral max-w-none;
-    @apply prose-headings:font-semibold prose-headings:tracking-tight;
-    @apply prose-a:text-primary-400 prose-a:no-underline hover:prose-a:underline;
-    @apply prose-code:text-primary-300 prose-code:bg-neutral-900 prose-code:rounded prose-code:px-1.5 prose-code:py-0.5;
-    @apply prose-pre:bg-neutral-900 prose-pre:border prose-pre:border-neutral-800;
+    @apply prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-white;
+    @apply prose-p:text-neutral-300 prose-p:leading-relaxed;
+    @apply prose-a:text-rust-400 prose-a:no-underline hover:prose-a:underline;
+    @apply prose-code:text-rust-300 prose-code:bg-neutral-900 prose-code:rounded prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-normal prose-code:before:content-none prose-code:after:content-none;
+    @apply prose-pre:bg-neutral-950 prose-pre:border prose-pre:border-neutral-800 prose-pre:rounded-xl prose-pre:p-5;
+    @apply prose-blockquote:border-l-4 prose-blockquote:border-l-rust-600 prose-blockquote:text-neutral-400 prose-blockquote:not-italic;
+    @apply prose-strong:text-white prose-strong:font-semibold;
+    @apply prose-hr:border-neutral-800;
+    @apply prose-th:text-neutral-100 prose-th:font-semibold prose-td:text-neutral-300;
+    @apply prose-li:text-neutral-300;
+    @apply prose-table:text-sm;
   }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.55s ease-out forwards;
+}
+
+.animate-blink {
+  animation: blink 1.2s step-end infinite;
 }
